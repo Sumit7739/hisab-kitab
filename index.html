@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hisab-Kitab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
+            color: #007bff;
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+        }
+
+        .splash-container {
+            text-align: center;
+        }
+
+        .splash-text {
+            font-size: 36px;
+            font-weight: 700;
+            opacity: 0;
+            animation: textZoomFade 1.5s forwards;
+        }
+
+        .splash-slogan {
+            font-size: 20px;
+            font-weight: 400;
+            margin-top: 10px;
+            opacity: 0;
+            animation: sloganFade 1.5s forwards 1s;
+        }
+
+        @keyframes textZoomFade {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes sloganFade {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            50% {
+                opacity: 0.7;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+    <script>
+        // Redirect to landing page after 3 seconds
+        setTimeout(() => {
+            window.location.href = "landing.html";
+        }, 3000);
+
+
+    </script>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="splash-text">Hisab-Kitab</div>
+        <div class="splash-slogan">Simplify Your Finances, One Record at a Time</div>
+    </div>
+</body>
+</html>

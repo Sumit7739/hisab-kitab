@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hisab-Kitab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
+            height: 100vh;
+            /* display: flex; */
+            /* justify-content: center; */
+            /* align-items: center; */
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            height: 75vh;
+            max-width: 400px;
+            text-align: center;
+            /* background: #ffffff; */
+            border-radius: 10px;
+            /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            width: 70%;
+            max-width: 400px;
+            margin: 0 auto;
+            margin-top: 30px;
+            background: #fbfbfb;
+            border: 1px solid #dddddd96;
+            border-radius: 20px;
+            padding: 3px 3px 3px 3px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header a {
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #007bff;
+            transition: color 0.3s ease;
+        }
+
+        .header a:hover {
+            color: #0056b3;
+        }
+
+        .header .signin {
+            padding: 16px 16px;
+            height: 100%;
+            font-size: 16px;
+            font-weight: 500;
+            background: #ffffff;
+            color: #000;
+            border: 1px solid #dddddd96;
+            width: 45%;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 5px 2px 6px rgba(0, 0, 0, 0.4);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .header .signup {
+            padding: 16px 16px;
+            text-align: center;
+            width: 45%;
+            color: #353535a9;
+        }
+
+        .title {
+            font-size: 34px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .title p {
+            font-size: 18px;
+            font-weight: 400;
+            color: #424040;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+            text-align: left;
+            background-color: #fbfbfb;
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group label {
+            font-size: 18px;
+            margin-bottom: 5px;
+            margin-left: 10px;
+            display: block;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 90%;
+            padding: 15px 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px 20px;
+            margin-top: 10px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #0056b3;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.4);
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="#" class="signin">Sign In</a>
+        <a href="signup.html" class="signup">Sign Up</a>
+    </div>
+    <div class="container">
+
+        <div class="title">Welcome Back,
+            <p>Good to see you again</p>
+        </div>
+        <br>
+        <form>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
+            <p>Forgot your password? <a href="forgot.html">Forgot Password</a></p>
+            <br>
+            <button type="submit" class="submit-btn">Sign In</button>
+        </form>
+        <div class="footer">
+        </div>
+    </div>
+</body>
+
+</html>
