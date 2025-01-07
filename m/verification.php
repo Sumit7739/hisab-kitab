@@ -103,7 +103,7 @@
 <body>
   <?php
 
-  include('config.php');
+  include('../config.php');
 
   // Check if email is provided as a URL parameter
   if (isset($_GET['email'])) {

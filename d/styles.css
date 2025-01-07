@@ -1,0 +1,388 @@
+/* General Styles */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #B4C5DB;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+header {
+    background-color: #85dfe7;
+    padding: 15px 15px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-radius: 5px;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.logo {
+    margin-right: auto;
+    /* Pushes the logo to the left */
+}
+
+.hamburger {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    display: none;
+    /* Hide by default */
+    cursor: pointer;
+    /* Change cursor to pointer */
+    font-size: 24px;
+    /* Size of hamburger icon */
+}
+
+.hamburger.active i {
+    display: none;
+    /* Hide the hamburger icon */
+    transform: rotate(90deg);
+    /* Rotate the hamburger icon when active */
+}
+
+.hamburger.active:before {
+    content: "\f00d";
+    /* FontAwesome code for the X icon */
+    font-family: "Font Awesome 5 Free";
+    /* Ensure the correct font is used */
+    font-weight: 900;
+    /* Ensure it's bold */
+    display: inline-block;
+    /* Show the X icon */
+}
+
+header nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    /* Keep links in a row on larger screens */
+    justify-content: flex-end;
+    /* Align links to the right */
+    align-items: center;
+    /* Center links vertically */
+}
+
+header nav ul li {
+    margin-left: 20px;
+}
+
+header nav ul li a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Semi-transparent background */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    /* Centered vertically */
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    /* Adjust width as needed */
+    max-width: 500px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+}
+
+.modal-content label {
+    display: block;
+    margin-top: 10px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background-color: #0056b3;
+}
+
+.close {
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.box1 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin: 10px;
+    border: 1px solid #ddd;
+    background-color: #E6E6E6;
+    border-radius: 6px;
+    height: 70px;
+    padding: 10px;
+}
+
+
+.credit {
+    margin-right: 10px;
+    width: 47%;
+    height: 100%;
+    background-color: #0373105a;
+    border-radius: 6px;
+}
+
+.debit {
+    margin-left: 10px;
+    width: 47%;
+    height: 100%;
+    background-color: #ff00005a;
+    border-radius: 6px;
+}
+
+.box2 {
+    display: flex;
+    margin: 10px;
+}
+
+#searchInput {
+    width: 60%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    margin-right: 2px;
+}
+
+#searchButton {
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background-color: #fbfbfb;
+    color: #000;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 2px;
+}
+
+#dateInput {
+    width: 18%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* Style for the link surrounding the box3 */
+.box-link {
+    text-decoration: none;
+    /* Remove underline from link */
+    color: inherit;
+    /* Inherit text color from the parent (so link doesn't change the text color) */
+    display: block;
+    /* Make the link cover the entire box */
+}
+
+.box3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin: 10px 5px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    /* Indicate that the whole box is clickable */
+}
+
+.user {
+    display: flex;
+    flex: 1;
+    align-items: center;
+}
+
+.info {
+    margin-left: 15px;
+    max-width: 200px;
+}
+
+.info p {
+    margin: 0;
+    padding: 4px 0;
+    color: #fff;
+    font-size: 14px;
+}
+
+.info p.name {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.info p.time {
+    font-size: 12px;
+    color: #ccc;
+    margin-top: 5px;
+}
+
+.bal {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: right;
+    min-width: 80px;
+}
+
+.box4 .btn {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    padding: 15px 15px;
+    border-radius: 24px;
+    border: 1px solid #8D2F18;
+    background-color: #8D2F18;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bolder;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(141, 47, 24, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1;
+}
+
+.box4 .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(141, 47, 24, 0.5);
+}
+
+/* Tablets and smaller screens (768px and below) */
+@media (max-width: 768px) {
+
+    /* Adjust header and navigation */
+    .hamburger {
+        display: block;
+        /* Show hamburger icon on mobile */
+        cursor: pointer;
+        /* Change cursor to pointer */
+        font-size: 24px;
+        /* Size of hamburger icon */
+        transition: transform 0.3s ease;
+        /* Transition for transform property */
+    }
+
+    .hamburger.active {
+        transform: rotate(90deg);
+        /* Rotate the hamburger icon when active */
+    }
+
+    header nav ul {
+        display: none;
+        flex-direction: column;
+        width: 60%;
+        font-size: 18px;
+        background-color: #85dfe7;
+        position: absolute;
+        top: 55px;
+        right: 0;
+        border-radius: 8px;
+        z-index: 999;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    header nav ul.show {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    header nav ul li {
+        margin: 10px 0;
+        text-align: center;
+        padding: 10px 10px;
+        position: relative;
+    }
+
+    header nav ul li:not(:last-child):after {
+        content: "";
+        display: block;
+        height: 1px;
+        background-color: #fff;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+    }
+}
+
+/* Mobile devices (480px and below) */
+@media (max-width: 480px) {
+
+    /* Stack navigation items vertically */
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    header nav ul li {
+        margin-left: 0;
+        margin-bottom: 5px;
+    }
+}
+
+#active {
+    color: rgb(255, 0, 0);
+}
