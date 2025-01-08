@@ -23,19 +23,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Start transaction
             $conn->autocommit(false);
 
-            // Insert into chats table (with phone number)
-            $insertChatSQL = "INSERT INTO chats (chat_name, phone_number) VALUES (?, ?)";
+            // Insert into chats table (with phone number and user_id)
+            $insertChatSQL = "INSERT INTO chats (chat_name, phone_number, creator_user_id) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($insertChatSQL);
-            $stmt->bind_param("ss", $customerName, $customerPhone);
+            $stmt->bind_param("ssi", $customerName, $customerPhone, $userId);
             $stmt->execute();
             $chatId = $conn->insert_id;
 
             // Determine connection_type (based on user role or other logic)
-            $getUserRoleSQL = "SELECT role FROM users WHERE user_id = ?";
+            $getUserRoleSQL = "SELECT name, role FROM users WHERE user_id = ?";
             $stmt = $conn->prepare($getUserRoleSQL);
             $stmt->bind_param("i", $userId);
             $stmt->execute();
             $result = $stmt->get_result();
+            $name = $row['name'];
             $userRole = $result->fetch_assoc()['role'];
 
             // Adjust connectionType based on user role
@@ -70,24 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Fetch all chats from the chats table
+// Fetch all chats for the logged-in user (based on user_id)
 $chats = [];
 try {
-    $fetchChatsSQL = "SELECT * FROM chats";
-    $result = $conn->query($fetchChatsSQL);
-
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $chats[] = $row; // Store each chat in the $chats array
-        }
-    }
-} catch (Exception $e) {
-    $errorMessage = "Error: " . $e->getMessage();
-}
-
-$chats = [];
-try {
-    // SQL to fetch chats and calculate balance
+    // Fetch chats where the logged-in user is either the creator or connected to the chat
     $fetchChatsSQL = "
         SELECT 
             c.chat_id, 
@@ -100,10 +87,19 @@ try {
             chats c
         LEFT JOIN 
             transactions t ON c.chat_id = t.chat_id
+        LEFT JOIN 
+            connections con ON c.chat_id = con.chat_id
+        WHERE 
+            c.creator_user_id = ? 
+            OR con.user_id_1 = ? 
+            OR con.user_id_2 = ?
         GROUP BY 
             c.chat_id
     ";
-    $result = $conn->query($fetchChatsSQL);
+    $stmt = $conn->prepare($fetchChatsSQL);
+    $stmt->bind_param("iii", $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']); // Bind user_id for creator and connection
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -118,10 +114,11 @@ try {
 }
 
 if (empty($chats)) {
-    $errorMessage = "No chats found in the database.";  // Debug message when no chats are found
+    $errorMessage = "No chats found for the logged-in user.";  // Debug message when no chats are found
 }
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -135,7 +132,7 @@ if (empty($chats)) {
 </head>
 
 <style>
-   
+
 </style>
 
 <body>
@@ -147,15 +144,16 @@ if (empty($chats)) {
             </div>
             <ul class="menu" id="menu">
                 <li><a href="index.html"><i class="fa fa-user" id="active"></i>&nbsp; Parties</a></li>
+                <li><a href="logout.php">LogOut</a></li>
             </ul>
         </nav>
     </header>
     <section>
-
+        <!-- 
         <div class="box1">
             <div class="credit"></div>
             <div class="debit"></div>
-        </div>
+        </div> -->
         <div class="box2">
             <input type="text" id="searchInput" placeholder="Search transactions...">
             <button id="searchButton">Search</button>

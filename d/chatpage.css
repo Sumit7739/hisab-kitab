@@ -1,0 +1,362 @@
+ /* General Body and Section Styles */
+ body {
+     font-family: Poppins, sans-serif;
+     margin: 0;
+     padding: 0;
+     background: #B4C5DB;
+ }
+
+ section {
+     margin: 20px;
+ }
+
+ /* Navbar Styles */
+ .nav {
+     width: 100%;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     background-color: #056068fd;
+     padding: 10px 20px;
+     border-radius: 0 0 10px 10px;
+     color: white;
+ }
+
+ .nav .userinfo {
+     display: flex;
+     align-items: center;
+ }
+
+ .nav .username {
+     font-weight: bold;
+     margin-left: 10px;
+ }
+
+ .nav i {
+     font-size: 1.5rem;
+ }
+
+ .nav a {
+     color: white;
+     text-decoration: none;
+     padding: 10px;
+ }
+
+ .transaction {
+     display: flex;
+     flex-direction: column;
+     gap: 10px;
+     /* Adds space between transaction boxes */
+     max-height: 70vh;
+     /* Limits the height to 80% of the viewport */
+     overflow-y: auto;
+     overflow-x: hidden;
+     /* Enables vertical scrolling if content exceeds max-height */
+     padding-right: 10px;
+     /* Adds some padding to the right for scrollbar spacing */
+     scrollbar-width: thin;
+     /* Adjust scrollbar width for modern browsers */
+     scrollbar-color: rgb(212, 18, 18);
+     /* Customize scrollbar colors */
+ }
+
+ .transaction::-webkit-scrollbar {
+     width: 8px;
+     /* Width of the scrollbar for WebKit-based browsers */
+ }
+
+ .transaction::-webkit-scrollbar-thumb {
+     background-color: #ccc;
+     /* Scrollbar thumb (draggable part) color */
+     border-radius: 4px;
+     /* Rounded edges for the scrollbar thumb */
+ }
+
+ .transaction::-webkit-scrollbar-track {
+     background-color: #f9f9f9;
+     /* Scrollbar track color */
+ }
+
+ .transaction .box {
+     width: 100%;
+     /* background-color: #fff; */
+     /* White background for transaction boxes */
+     padding: 15px;
+     border-radius: 10px;
+     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+     /* Subtle shadow for better visibility */
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+ }
+
+ .balance-message {
+     display: flex;
+     justify-content: space-between;
+     /* Distribute boxes evenly */
+     align-items: center;
+     /* Align content vertically */
+     gap: 15px;
+     /* Space between boxes */
+     margin: 20px 0;
+     /* Adds spacing around the balance section */
+ }
+
+ .balance-message p {
+     flex: 1;
+     /* Ensures equal width for each box */
+     background-color: #f9f9f9;
+     /* Light background for boxes */
+     padding: 15px;
+     /* Adds padding inside the boxes */
+     border-radius: 10px;
+     /* Rounded corners */
+     text-align: center;
+     /* Center-align text inside the boxes */
+     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+     /* Adds subtle shadow for better visibility */
+     font-weight: 500;
+     /* Makes the text more prominent */
+     margin: 0;
+     /* Removes default paragraph margins */
+     color: #333;
+     /* Text color */
+ }
+
+ .balance-message p:nth-child(1) {
+     background-color: #ffe4e1;
+     /* Slight red tint for debit box */
+ }
+
+ .balance-message p:nth-child(2) {
+     background-color: #e0ffe4;
+     /* Slight green tint for credit box */
+ }
+
+ .balance-message p:nth-child(3) {
+     background-color: #e8f4ff;
+     /* Slight blue tint for balance box */
+ }
+
+ /* Debit Transaction (Red) */
+ .debit {
+     background-color: #f8d7da;
+     /* Light red background */
+     border: 1px solid #f5c6cb;
+     /* Border to match the background */
+ }
+
+ /* Credit Transaction (Green) */
+ .credit {
+     background-color: #d4edda;
+     /* Light green background */
+     border: 1px solid #c3e6cb;
+     /* Border to match the background */
+ }
+
+ /* Transaction Info Styling */
+ .transaction .box .transaction-info {
+     display: flex;
+     flex-direction: column;
+ }
+
+ .transaction .box .transaction-info p {
+     margin: 1px 0;
+ }
+
+ .transaction .box .transaction-info p.amount {
+     font-size: 1.2rem;
+     font-weight: bold;
+ }
+
+ /* Time Styling */
+ .transaction .box .transaction-info p.time {
+     font-size: 0.9rem;
+     color: #888;
+ }
+
+ /* Description Styling */
+ .transaction .box .transaction-status p {
+     font-size: 1rem;
+     color: #555;
+ }
+
+ /* Error Message Styling */
+ .transaction .errormsg {
+     align-items: center;
+     text-align: center;
+     justify-content: center;
+     color: #ff0000;
+     font-size: 14px;
+     margin-top: 10px;
+     background-color: #fbfbfb;
+     padding: 10px;
+     border-radius: 10px;
+     box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+ }
+
+ /* Popups Styles */
+ .popup {
+     display: block;
+     position: fixed;
+     bottom: -100%;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background-color: rgba(0, 0, 0, 0.7);
+     z-index: 1000;
+     justify-content: center;
+     align-items: center;
+     transition: bottom 0.5s ease, opacity 0.5s ease;
+     /* Added opacity transition */
+ }
+
+ .popup.show {
+     display: flex;
+     bottom: 0;
+     opacity: 1;
+     /* Make the popup fully visible */
+ }
+
+ .popup.hide {
+     opacity: 0;
+     transition: bottom 0.5s ease, opacity 0.5s ease;
+     /* Set opacity to 0 when hiding */
+ }
+
+ .popup-content {
+     background-color: #fff;
+     padding: 20px;
+     border-radius: 8px;
+     width: 400px;
+     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+ }
+
+ .popup-close {
+     position: absolute;
+     top: 10px;
+     right: 10px;
+     font-size: 24px;
+     cursor: pointer;
+     color: #333;
+ }
+
+ .popup h2 {
+     margin-bottom: 20px;
+     text-align: center;
+ }
+
+ .popup form {
+     display: flex;
+     flex-direction: column;
+     /* align-items: center; */
+ }
+
+ .popup label {
+     font-size: 20px;
+     margin-bottom: 5px;
+     margin-left: 10px;
+     display: block;
+     color: #555;
+ }
+
+ .popup input {
+     width: 98%;
+     padding: 15px;
+     font-size: 14px;
+     margin-top: 5px;
+     margin-bottom: 20px;
+     border: 1px solid #ddd;
+     border-radius: 20px;
+     outline: none;
+     transition: border 0.3s ease;
+     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+ }
+
+ .popup input:focus {
+     border-color: #007bff;
+ }
+
+ .popup button {
+     margin-top: 20px;
+     padding: 15px 20px;
+     color: white;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     font-size: 20px;
+ }
+
+ .popup button.debits {
+     background-color: #ff00009a;
+ }
+
+ .popup button.credits {
+     background-color: #0373109a;
+ }
+
+ .popup button:hover {
+     opacity: 0.9;
+ }
+
+ /* Buttons for the transactions */
+ .addTransactions {
+     display: flex;
+     justify-content: center;
+     gap: 20px;
+     margin-top: 20px;
+ }
+
+ .addTransactions button {
+     padding: 10px 20px;
+     font-size: 16px;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+ }
+
+ .addTransactions button#debit-button {
+     background-color: #f44336;
+     /* Red for debit */
+     color: white;
+ }
+
+ .addTransactions button#credit-button {
+     background-color: #4CAF50;
+     /* Green for credit */
+     color: white;
+ }
+
+ .addTransactions button:hover {
+     opacity: 0.9;
+ }
+
+ /* Bottom Buttons */
+ .addTransactions {
+     position: fixed;
+     bottom: 20px;
+     width: 90%;
+     display: flex;
+     justify-content: space-around;
+     margin-top: 20px;
+ }
+
+ .addTransactions button {
+     width: 45%;
+     padding: 15px 20px;
+     /* background-color: #f4b400; */
+     color: white;
+     border: none;
+     border-radius: 10px;
+     cursor: pointer;
+     font-size: 1rem;
+     transition: background-color 0.3s;
+ }
+
+ .addTransactions button.debits {
+     background-color: #ff00009a;
+ }
+
+ .addTransactions button.credits {
+     background-color: #0373109a;
+ }

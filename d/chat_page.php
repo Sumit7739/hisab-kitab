@@ -1,3 +1,146 @@
+<?php
+session_start();
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+include '../config.php'; // Include your database connection file
+
+// Ensure the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Validate chat_id
+if (!isset($_GET['chat_id']) || !is_numeric($_GET['chat_id'])) {
+    die("Invalid chat ID.");
+}
+
+$chatId = $_GET['chat_id'];
+$userId = $_SESSION['user_id'];
+$errorMessage = "";
+
+// Check if the user is part of the chat and the connection is active
+$checkConnectionSQL = "SELECT * FROM connections WHERE chat_id = ? AND (user_id_1 = ? OR user_id_2 = ?) AND connection_status = 'completed'";
+$stmt = $conn->prepare($checkConnectionSQL);
+$stmt->bind_param("iii", $chatId, $userId, $userId);
+$stmt->execute();
+$connectionResult = $stmt->get_result();
+
+// Check if the logged-in user is the creator of the chat
+$checkCreatorSQL = "SELECT creator_user_id FROM chats WHERE chat_id = ?";
+$stmt = $conn->prepare($checkCreatorSQL);
+$stmt->bind_param("i", $chatId);
+$stmt->execute();
+$creatorResult = $stmt->get_result();
+
+if ($creatorResult->num_rows == 0) {
+    die("Chat not found.");
+}
+
+$creatorData = $creatorResult->fetch_assoc();
+$creatorUserId = $creatorData['creator_user_id'];
+
+// Ensure the user is either connected or the creator
+if ($connectionResult->num_rows == 0 && $creatorUserId != $userId) {
+    die("You are not authorized to access this chat. Please ensure you are connected or are the creator.");
+}
+
+// Fetch chat details (chat_name and phone_number)
+$fetchChatSQL = "SELECT chat_name, phone_number, email FROM chats WHERE chat_id = ?";
+$stmt = $conn->prepare($fetchChatSQL);
+$stmt->bind_param("i", $chatId);
+$stmt->execute();
+$chatResult = $stmt->get_result();
+
+if ($chatResult->num_rows == 0) {
+    die("Chat not found.");
+}
+
+$chatData = $chatResult->fetch_assoc();
+$chatName = $chatData['chat_name'];
+$customerPhone = $chatData['phone_number'];
+$customerEmail = $chatData['email'];
+
+// Fetch all transactions for this chat
+$fetchTransactionsSQL = "SELECT * FROM transactions WHERE chat_id = ? ORDER BY transaction_date ASC";
+$stmt = $conn->prepare($fetchTransactionsSQL);
+$stmt->bind_param("i", $chatId);
+$stmt->execute();
+$transactionsResult = $stmt->get_result();
+
+// Initialize balance variables
+$totalDebit = 0;
+$totalCredit = 0;
+$balance = 0;
+
+// Handle new transaction submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $transactionType = $_POST['transactionType'];
+    $amount = $_POST['amount'];
+    $description = isset($_POST['description']) ? $_POST['description'] : "";
+    // Ensure payment_date is a valid date or use today's date
+    $paymentDate = isset($_POST['payment_date']) && !empty($_POST['payment_date']) ? $_POST['payment_date'] : date('Y-m-d');
+
+    // Basic validation
+    if (empty($amount) || !is_numeric($amount)) {
+        $errorMessage = "Please enter a valid amount.";
+    } else {
+        // Additional validation for payment_date
+        if (!preg_match('/\d{4}-\d{2}-\d{2}/', $paymentDate)) {
+            $errorMessage = "Invalid date format. Please select a valid date.";
+        } else {
+            try {
+                // Insert transaction into the database
+                $insertTransactionSQL = "INSERT INTO transactions (chat_id, user_id, transaction_type, amount, description, transaction_date, payment_date) 
+                                         VALUES (?, ?, ?, ?, ?, NOW(), ?)";
+                $stmt = $conn->prepare($insertTransactionSQL);
+                $stmt->bind_param("iisdss", $chatId, $userId, $transactionType, $amount, $description, $paymentDate);
+                $stmt->execute();
+
+                // Redirect to refresh the transaction list
+                header("Location: chat_page.php?chat_id=$chatId");
+                exit();
+            } catch (Exception $e) {
+                $errorMessage = "Error: " . $e->getMessage();
+            }
+        }
+    }
+}
+
+// Initialize an array to store transactions for HTML output
+$transactionList = [];
+
+if ($transactionsResult->num_rows > 0) {
+    // Loop through each transaction to calculate balance and prepare HTML output
+    while ($transaction = $transactionsResult->fetch_assoc()) {
+        // Calculate the running balance
+        if ($transaction['transaction_type'] == 'debit') {
+            $totalDebit += (float) $transaction['amount'];
+            $balance -= (float) $transaction['amount'];  // Debit reduces balance
+        } else if ($transaction['transaction_type'] == 'credit') {
+            $totalCredit += (float) $transaction['amount'];
+            $balance += (float) $transaction['amount'];  // Credit increases balance
+        }
+
+        // Add transaction details to the list for later display
+        $transactionList[] = [
+            'description' => htmlspecialchars($transaction['description']),
+            'payment_date' => htmlspecialchars($transaction['payment_date'] ?? $transaction['transaction_date']),
+            'amount' => htmlspecialchars($transaction['amount']),
+            'transaction_type' => $transaction['transaction_type'],
+            'balance' => number_format($balance, 2)
+        ];
+    }
+} else {
+    $transactionList[] = ['error' => 'No transactions found. Add a new transaction.'];
+}
+// Reverse the transaction list to show the transactions in the order they were added
+$transactionList = array_reverse($transactionList);
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,255 +149,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisab</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="chatpage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* General Body and Section Styles */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #B4C5DB;
-        }
-
-        section {
-            margin: 20px;
-        }
-
-        /* Navbar Styles */
-        .nav {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #056068fd;
-            padding: 10px 20px;
-            border-radius: 0 0 10px 10px;
-            color: white;
-        }
-
-        .nav .userinfo {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav .username {
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        .nav i {
-            font-size: 1.5rem;
-        }
-
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 10px;
-        }
-
-        /* Transactions Skeleton */
-        .transaction {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .transaction .box {
-            background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .transaction .box .transaction-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .transaction .box .transaction-info p {
-            margin: 5px 0;
-        }
-
-        .transaction .box .transaction-info p.amount {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .transaction .box .transaction-info p.time {
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        /* Popups Styles */
-        /* Popups Styles */
-        .popup {
-            display: block;
+        /* Modal Styles */
+        .modal {
+            display: none;
+            /* Hidden by default */
             position: fixed;
-            bottom: -100%;
+            z-index: 1;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            transition: bottom 0.5s ease, opacity 0.5s ease;
-            /* Added opacity transition */
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Semi-transparent background */
+            overflow: auto;
+            padding-top: 60px;
         }
 
-        .popup.show {
-            display: flex;
-            bottom: 0;
-            opacity: 1;
-            /* Make the popup fully visible */
-        }
-
-        .popup.hide {
-            opacity: 0;
-            transition: bottom 0.5s ease, opacity 0.5s ease;
-            /* Set opacity to 0 when hiding */
-        }
-
-        .popup-content {
+        .modal-content {
             background-color: #fff;
+            margin: 5% auto;
             padding: 20px;
-            border-radius: 8px;
-            width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .popup-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Style the gear icon */
+        #gearIcon {
             font-size: 24px;
             cursor: pointer;
             color: #333;
         }
 
-        .popup h2 {
-            margin-bottom: 20px;
-            text-align: center;
+        #gearIcon:hover {
+            color: #007bff;
+            /* Hover effect for the icon */
         }
 
-        .popup form {
-            display: flex;
-            flex-direction: column;
-            /* align-items: center; */
+        /* Form Group Styles */
+        .form-group {
+            margin-bottom: 15px;
         }
 
-        .popup label {
-            font-size: 20px;
-            margin-bottom: 5px;
-            margin-left: 10px;
-            display: block;
-            color: #555;
-        }
-
-        .popup input {
-            width: 98%;
-            padding: 15px;
+        .form-group label {
             font-size: 14px;
-            margin-top: 5px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            outline: none;
-            transition: border 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: block;
+            margin-bottom: 5px;
         }
 
-        .popup input:focus {
-            border-color: #007bff;
-        }
-
-        .popup button {
-            margin-top: 20px;
-            padding: 15px 20px;
-            color: white;
-            border: none;
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            cursor: pointer;
-            font-size: 20px;
+            box-sizing: border-box;
         }
 
-        .popup button.debits {
-            background-color: #ff00009a;
+        .form-group input[readonly] {
+            background-color: #f0f0f0;
         }
 
-        .popup button.credits {
-            background-color: #0373109a;
-        }
-
-        .popup button:hover {
-            opacity: 0.9;
-        }
-
-        /* Buttons for the transactions */
-        .addTransactions {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .addTransactions button {
-            padding: 10px 20px;
-            font-size: 16px;
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
-        .addTransactions button#debit-button {
-            background-color: #f44336;
-            /* Red for debit */
-            color: white;
+        button:hover {
+            background-color: #0056b3;
         }
 
-        .addTransactions button#credit-button {
-            background-color: #4CAF50;
-            /* Green for credit */
-            color: white;
-        }
-
-        .addTransactions button:hover {
-            opacity: 0.9;
-        }
-
-        /* Bottom Buttons */
-        .addTransactions {
-            position: absolute;
-            bottom: 20px;
-            width: 90%;
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-
-        .addTransactions button {
-            width: 45%;
-            padding: 15px 20px;
-            /* background-color: #f4b400; */
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-
-        .addTransactions button.debits {
-            background-color: #ff00009a;
-        }
-
-        .addTransactions button.credits {
-            background-color: #0373109a;
+        #statusMessage p {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
         }
     </style>
 </head>
@@ -263,53 +256,63 @@
     <div class="nav">
         <a href="index.php"><i class="fa-solid fa-arrow-left"></i></a>
         <div class="userinfo">
-            <p class="username">Test</p>
+            <p class="username"><?php echo htmlspecialchars($chatName); ?></p>
         </div>
-        <a href="usersettings.php"><i class="fa-solid fa-gear"></i></a>
+        <a href="settings.php?chat_id=<?php echo $chatId; ?>" id="gearIcon">
+            <i class="fa-solid fa-gear"></i></a>
+
     </div>
-
     <section>
-        <div class="msg"></div>
-        <div class="transaction"></div>
+        <!-- Balance message -->
+        <div class="balance-message">
+            <p>Total Debit: ₹ <?php echo number_format($totalDebit, 2); ?></p>
+            <p>Total Credit: ₹ <?php echo number_format($totalCredit, 2); ?></p>
+            <?php if ($balance > 0): ?>
+                <p>You will Get ₹ <?php echo number_format($balance, 2); ?>.</p>
+            <?php elseif ($balance < 0): ?>
+                <p>You will give ₹ <?php echo number_format(abs($balance), 2); ?>.</p>
+            <?php else: ?>
+                <p>The balance is 0.</p>
+            <?php endif; ?>
+        </div>
 
-        <!-- Transaction boxes -->
         <div class="transaction">
-            <div class="box">
-                <div class="transaction-info">
-                    <p class="name">John Doe</p>
-                    <p class="amount">₹ 500</p>
-                    <p class="time">2025-01-07 14:30:00</p>
-                </div>
-                <div class="transaction-status">
-                    <p>Status</p>
-                </div>
-            </div>
-            <div class="box">
-                <div class="transaction-info">
-                    <p class="name">Jane Smith</p>
-                    <p class="amount">₹ -200</p>
-                    <p class="time">2025-01-07 15:00:00</p>
-                </div>
-                <div class="transaction-status">
-                    <p>Status</p>
-                </div>
-            </div>
+            <?php if (isset($transactionList[0]['error'])): ?>
+                <p class="errormsg"><?php echo $transactionList[0]['error']; ?></p>
+            <?php else: ?>
+                <?php foreach ($transactionList as $transaction): ?>
+                    <div class="box <?php echo $transaction['transaction_type'] == 'debit' ? 'debit' : 'credit'; ?>">
+                        <div class="transaction-info">
+                            <p><?php echo $transaction['description']; ?></p>
+                            <!-- <p class="balance">Running Balance: Rs <?php echo $transaction['balance']; ?></p> -->
+                            <p class="time"><?php echo $transaction['payment_date']; ?>
+                            </p>
+                        </div>
+                        <div class="transaction-status transaction-info">
+                            <p class="amount">₹ <?php echo $transaction['amount']; ?></p>
+                            <p class="time">Bal: ₹ <?php echo $transaction['balance']; ?></p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
 
         <!-- Debit Popup -->
-        <div class="popup debit-popup">
+        <div class="popup debit-popup hide">
             <div class="popup-content">
                 <span class="popup-close">&times;</span>
-                <h2>Enter Debit Amount</h2>
-                <form action="your_php_script.php" method="POST">
+                <h2>Enter Debit Transaction</h2>
+                <form action="chat_page.php?chat_id=<?php echo $chatId; ?>" method="POST">
+                    <input type="hidden" name="transactionType" value="Debit">
+
                     <label for="debit-amount">Amount (₹):</label>
-                    <input type="number" id="debit-amount" name="debit-amount" required>
+                    <input type="number" id="debit-amount" name="amount" required placeholder="Enter amount">
 
                     <label for="debit-description">Description:</label>
-                    <input type="text" id="debit-description" name="debit-description">
+                    <input type="text" id="debit-description" name="description" placeholder="Add a note (optional)">
 
                     <label for="debit-date">Date:</label>
-                    <input type="date" id="debit-date" name="debit-date">
+                    <input type="date" id="debit-date" name="payment_date" max="<?php echo date('Y-m-d'); ?>" placeholder="Pick a date (default: today)">
 
                     <button type="submit" class="debits">Submit Debit</button>
                 </form>
@@ -317,24 +320,27 @@
         </div>
 
         <!-- Credit Popup -->
-        <div class="popup credit-popup">
+        <div class="popup credit-popup hide">
             <div class="popup-content">
                 <span class="popup-close">&times;</span>
-                <h2>Enter Credit Amount</h2>
-                <form action="your_php_script.php" method="POST">
+                <h2>Enter Credit Transaction</h2>
+                <form action="chat_page.php?chat_id=<?php echo $chatId; ?>" method="POST">
+                    <input type="hidden" name="transactionType" value="Credit">
+
                     <label for="credit-amount">Amount (₹):</label>
-                    <input type="number" id="credit-amount" name="credit-amount" required>
+                    <input type="number" id="credit-amount" name="amount" required placeholder="Enter amount">
 
                     <label for="credit-description">Description:</label>
-                    <input type="text" id="credit-description" name="credit-description">
+                    <input type="text" id="credit-description" name="description" placeholder="Add a note (optional)">
 
                     <label for="credit-date">Date:</label>
-                    <input type="date" id="credit-date" name="credit-date">
+                    <input type="date" id="credit-date" name="payment_date" max="<?php echo date('Y-m-d'); ?>" placeholder="Pick a date (default: today)">
 
                     <button type="submit" class="credits">Submit Credit</button>
                 </form>
             </div>
         </div>
+
 
         <!-- Bottom Buttons -->
         <div class="addTransactions">
@@ -343,61 +349,7 @@
         </div>
     </section>
 
-    <script>
-        // Get the debit and credit popup elements
-        const debitPopup = document.querySelector('.debit-popup');
-        const creditPopup = document.querySelector('.credit-popup');
-
-        // Get the buttons that trigger the popups
-        const debitButton = document.getElementById('debit-button');
-        const creditButton = document.getElementById('credit-button');
-
-        // Get the close buttons for both popups
-        const closeDebitPopup = document.querySelector('.debit-popup .popup-close');
-        const closeCreditPopup = document.querySelector('.credit-popup .popup-close');
-
-        // Function to show the popup by adding the 'show' class
-        function showPopup(popup) {
-            popup.classList.add('show');
-            popup.classList.remove('hide'); // Remove the 'hide' class when showing the popup
-        }
-
-        // Function to hide the popup by adding the 'hide' class
-        function hidePopup(popup) {
-            popup.classList.add('hide'); // Add the 'hide' class to trigger opacity transition
-            setTimeout(function() {
-                popup.classList.remove('show');
-            }, 500); // Wait for the opacity transition to finish before removing 'show'
-        }
-
-        // Event listeners to open the popups
-        debitButton.addEventListener('click', function() {
-            showPopup(debitPopup);
-        });
-
-        creditButton.addEventListener('click', function() {
-            showPopup(creditPopup);
-        });
-
-        // Event listeners to close the popups when clicking the close button
-        closeDebitPopup.addEventListener('click', function() {
-            hidePopup(debitPopup);
-        });
-
-        closeCreditPopup.addEventListener('click', function() {
-            hidePopup(creditPopup);
-        });
-
-        // Event listener to close the popup if the user clicks outside the popup content
-        window.addEventListener('click', function(event) {
-            if (event.target === debitPopup) {
-                hidePopup(debitPopup);
-            }
-            if (event.target === creditPopup) {
-                hidePopup(creditPopup);
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>
