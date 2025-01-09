@@ -198,13 +198,9 @@ $transactionList = array_reverse($transactionList);
         #gearIcon {
             font-size: 24px;
             cursor: pointer;
-            color: #333;
+            color: #fff;
         }
 
-        #gearIcon:hover {
-            color: #007bff;
-            /* Hover effect for the icon */
-        }
 
         /* Form Group Styles */
         .form-group {
@@ -265,14 +261,14 @@ $transactionList = array_reverse($transactionList);
     <section>
         <!-- Balance message -->
         <div class="balance-message">
-            <p>Total Debit: ₹ <?php echo number_format($totalDebit, 2); ?></p>
-            <p>Total Credit: ₹ <?php echo number_format($totalCredit, 2); ?></p>
+            <p>Debit: ₹<?php echo number_format($totalDebit, 2); ?></p>
+            <p>Credit: ₹<?php echo number_format($totalCredit, 2); ?></p>
             <?php if ($balance > 0): ?>
                 <p>You will Get ₹ <?php echo number_format($balance, 2); ?>.</p>
             <?php elseif ($balance < 0): ?>
                 <p>You will give ₹ <?php echo number_format(abs($balance), 2); ?>.</p>
             <?php else: ?>
-                <p>The balance is 0.</p>
+                <p>Balance: ₹0.00</p>
             <?php endif; ?>
         </div>
 

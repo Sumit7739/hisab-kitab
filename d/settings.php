@@ -289,8 +289,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
 
-        .userinfo p{
-           font-size: 22px;
+        .userinfo p {
+            font-size: 22px;
+        }
+
+
+        /* Disabled button style */
+        #generateOtpBtn:disabled {
+            background-color: #888;
+            /* Dark gray for disabled state */
+            color: #ccc;
+            /* Light gray text */
+            cursor: not-allowed;
+            /* Change cursor to indicate it's disabled */
         }
     </style>
 </head>
@@ -342,10 +353,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h3>Generate and Fetch OTP</h3>
         <p>Share OTP to Connect</p>
 
-        <div class="form-group">
-            <button id="generateOtpBtn">Generate OTP</button>
-        </div>
 
+        <div class="form-group">
+            <button id="generateOtpBtn" disabled>Generate OTP</button> <!-- Button is disabled by default -->
+        </div>
         <div class="form-group">
             <label for="otp">Generated OTP:</label>
             <input type="text" id="otp" readonly>
@@ -373,6 +384,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Get the connection_id from PHP and pass it to JavaScript
             const connectionId = <?php echo json_encode($chatData['connection_id']); ?>;
 
+            // Function to check connection status and enable the OTP generation button
+            function checkConnectionStatus() {
+                if (!connectionId) {
+                    alert('No connection ID found.');
+                    return;
+                }
+
+                // AJAX request to fetch OTP and connection status
+                $.ajax({
+                    url: 'fetch_otp_status.php', // PHP file that handles OTP status fetching
+                    type: 'GET',
+                    data: {
+                        connection_id: connectionId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#otp').val(response.otp); // Display fetched OTP
+                            $('#otp_status').val(response.otp_status); // Display OTP status
+                            $('#connection_status').val(response.connection_status); // Display connection status
+
+                            // Enable the Generate OTP button only if connection_status is 'pending' and OTP is not generated
+                            if (response.connection_status === 'pending' && response.otp_status !== 'OTP Generated') {
+                                $('#generateOtpBtn').prop('disabled', false); // Enable the button
+                            } else {
+                                $('#generateOtpBtn').prop('disabled', true); // Disable the button if OTP is generated or connection status is not 'pending'
+                            }
+                        } else {
+                            $('#connection_status').val('Error: ' + response.message); // Display error in connection status
+                        }
+                    },
+                    error: function() {
+                        $('#connection_status').val('An error occurred while fetching connection status.');
+                    }
+                });
+            }
+
+            // Call the function to check connection status on page load
+            checkConnectionStatus();
+
             // Generate OTP button click handler
             $('#generateOtpBtn').click(function() {
                 if (!connectionId) {
@@ -391,6 +441,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (response.success) {
                             $('#otp').val(response.otp); // Display the generated OTP
                             $('#otp_status').val('OTP Generated'); // Update OTP status
+                            $('#generateOtpBtn').prop('disabled', true); // Disable the button after OTP is generated
                         } else {
                             $('#otp_status').val('Error: ' + response.message); // Display error in OTP status
                         }
@@ -401,33 +452,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
             });
 
-            // Function to fetch OTP status at intervals
-            function fetchOtpStatus() {
-                if (!connectionId) {
-                    alert('No connection ID found.');
-                    return;
-                }
-
-                // AJAX request to fetch OTP and connection status
-                $.ajax({
-                    url: 'fetch_otp_status.php', // PHP file that handles OTP status fetching
-                    type: 'GET',
-                    data: {
-                        connection_id: connectionId
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $('#otp').val(response.otp); // Display fetched OTP
-                            $('#connection_status').val(response.connection_status); // Display fetched connection status
-                        } else {
-                            $('#connection_status').val('Error: ' + response.message); // Display error in connection status
-                        }
-                    },
-                    error: function() {
-                        $('#connection_status').val('An error occurred while fetching connection status.');
-                    }
-                });
-            }
+            // Set the interval to fetch OTP status every 5 seconds (5000 milliseconds)
+            // setInterval(checkConnectionStatus, 5000);
 
             $('#settingsForm').submit(function(event) {
                 event.preventDefault(); // Prevent the default form submission

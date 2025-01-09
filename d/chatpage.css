@@ -47,7 +47,7 @@
      flex-direction: column;
      gap: 10px;
      /* Adds space between transaction boxes */
-     max-height: 70vh;
+     max-height: 75vh;
      /* Limits the height to 80% of the viewport */
      overflow-y: auto;
      overflow-x: hidden;
@@ -107,7 +107,7 @@
      /* Ensures equal width for each box */
      background-color: #f9f9f9;
      /* Light background for boxes */
-     padding: 15px;
+     padding: 5px;
      /* Adds padding inside the boxes */
      border-radius: 10px;
      /* Rounded corners */

@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             if ($row = $result->fetch_assoc()) {
                 $response['success'] = true;
                 $response['otp'] = $row['otp'];
+                $response['otp_status'] = $row['otp_status'];
                 $response['connection_status'] = $row['connection_status'];
             } else {
                 $response['message'] = "No connection found for the given ID.";
