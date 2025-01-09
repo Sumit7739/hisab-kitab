@@ -12,7 +12,7 @@ include '../config.php'; // Update the path to your database configuration
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: signin.php");
     exit();
 }
 
@@ -303,6 +303,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: not-allowed;
             /* Change cursor to indicate it's disabled */
         }
+
+        .delbtn {
+            width: 100%;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        .delbtn:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #d32f2f;
+        }
+
+        .btn p {
+            font-size: 18px;
+            color: #d32f2f;
+        }
+
+        /* Popup overlay */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+        }
+
+        /* Popup content */
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Popup buttons */
+        .popup-buttons {
+            margin-top: 20px;
+        }
+
+        .popup-buttons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .confirm-btn {
+            background: #d9534f;
+            color: #fff;
+        }
+
+        .cancel-btn {
+            background: #6c757d;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -348,11 +429,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit">Update Settings</button>
             </div>
         </form>
+        <hr>
+        <div class="spacer"></div>
 
         <!-- OTP Section -->
         <h3>Generate and Fetch OTP</h3>
-        <p>Share OTP to Connect</p>
-
+        <div class="spacer"></div>
+        <p>Share the OTP to Connect other User</p>
+        <br>
 
         <div class="form-group">
             <button id="generateOtpBtn" disabled>Generate OTP</button> <!-- Button is disabled by default -->
@@ -376,11 +460,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button id="fetchOtpBtn">Get Status</button>
             <!-- <button id="stopFetchBtn">Stop Status</button> -->
         </div>
+        <hr>
+        <div class="spacer"></div>
+        <div class="btn" data-chat-id="<?php echo $chat_id; ?>">
+            <h3>Danger Zone</h3>
+            <p>Once you delete a chat, there is no going back. Please be certain.</p>
+            <div class="spacer"></div>
+            <button type="button" class="delbtn">Delete Chat</button>
+        </div>
+
+
+        <!-- Popup Structure -->
+        <div id="deletePopup" class="popup-overlay">
+            <div class="popup-content">
+                <h3>Confirm Delete</h3>
+                <p>Are you sure you want to delete this chat?</p>
+                <button id="confirmDelete" style="margin: 10px; padding: 10px 20px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer;">Yes, Delete</button>
+                <button id="cancelDelete" style="margin: 10px; padding: 10px 20px; background-color: grey; color: white; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+            </div>
+        </div>
+
 
     </div>
 
     <script>
         $(document).ready(function() {
+
             // Get the connection_id from PHP and pass it to JavaScript
             const connectionId = <?php echo json_encode($chatData['connection_id']); ?>;
 
@@ -485,17 +590,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
             });
 
-            // Set the interval to fetch OTP status every 5 seconds (5000 milliseconds)
-            const fetchInterval = setInterval(fetchOtpStatus, 5000);
 
-            // Optional: If you want to stop fetching on some event, you can use clearInterval
-            // For example, stop after the user manually clicks a button or any other condition:
-            // $('#stopFetchBtn').click(function () {
-            //     clearInterval(fetchInterval); // Stops the interval
-            // });
+            let chatIdToDelete = null;
+
+            $(document).ready(function() {
+                // Open the popup
+                $(".delbtn").on("click", function() {
+                    chatIdToDelete = $(this).closest(".btn").data("chat-id"); // Get chat ID from the closest .btn
+                    $("#deletePopup").fadeIn(); // Show the popup
+                });
+
+                // Close the popup on cancel button
+                $("#cancelDelete").on("click", function() {
+                    $("#deletePopup").fadeOut(); // Hide the popup
+                });
+
+                // Close the popup on clicking outside the box
+                $("#deletePopup").on("click", function(e) {
+                    if (e.target.id === "deletePopup") {
+                        $("#deletePopup").fadeOut(); // Hide the popup
+                    }
+                });
+
+                // Handle the confirm delete button
+                $("#confirmDelete").on("click", function() {
+                    if (chatIdToDelete) {
+                        console.log("Chat ID to delete:", chatIdToDelete); // Debugging log
+                        // Proceed with AJAX or further logic
+                    } else {
+                        alert("No chat ID selected.");
+                    }
+                    $("#deletePopup").fadeOut();
+                });
+            });
+            // Handle the confirm delete button
+            $("#confirmDelete").on("click", function() {
+                if (chatIdToDelete) {
+                    $.ajax({
+                        url: "delete_chat.php",
+                        type: "POST",
+                        data: {
+                            chat_id: chatIdToDelete
+                        }, // Pass the chat ID to the server
+                        success: function(response) {
+                            try {
+                                let result = JSON.parse(response);
+
+                                if (result.success) {
+                                    alert("Chat deleted successfully!");
+                                    $(`.btn[data-chat-id="${chatIdToDelete}"]`).remove();
+                                    // add redirection to index.php page
+                                    location.href = "index.php";
+                                } else {
+                                    alert(result.message || "Failed to delete chat.");
+                                }
+                            } catch (e) {
+                                console.error("Invalid JSON response", response);
+                                alert("An unexpected error occurred.");
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX error:", error);
+                            alert("Failed to delete chat. Please try again later.");
+                        },
+                    });
+                }
+                $("#deletePopup").fadeOut();
+            });
+
+            // Close the popup on cancel or background click
+            $("#cancelDelete, #deletePopup").on("click", function(e) {
+                if (e.target.id === "cancelDelete" || e.target.id === "deletePopup") {
+                    $("#deletePopup").fadeOut();
+                }
+            });
         });
     </script>
-
+    <!-- dfads trn = 32, chat id =  11-->
 </body>
 
 </html>

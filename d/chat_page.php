@@ -9,7 +9,7 @@ include '../config.php'; // Include your database connection file
 
 // Ensure the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: signin.php");
     exit();
 }
 
@@ -148,115 +148,24 @@ $transactionList = array_reverse($transactionList);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisab</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- <link rel="stylesheet" href="styles.css"> -->
     <link rel="stylesheet" href="chatpage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* Modal Styles */
-        .modal {
-            display: none;
-            /* Hidden by default */
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            /* Semi-transparent background */
-            overflow: auto;
-            padding-top: 60px;
-        }
 
-        .modal-content {
-            background-color: #fff;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close-btn:hover,
-        .close-btn:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* Style the gear icon */
-        #gearIcon {
-            font-size: 24px;
-            cursor: pointer;
-            color: #fff;
-        }
-
-
-        /* Form Group Styles */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            font-size: 14px;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        .form-group input[readonly] {
-            background-color: #f0f0f0;
-        }
-
-        button {
-            padding: 10px 15px;
-            font-size: 14px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #statusMessage p {
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-        }
     </style>
 </head>
 
 <body>
     <div class="nav">
         <a href="index.php"><i class="fa-solid fa-arrow-left"></i></a>
+         <!-- <a href="index.php">back</a> -->
         <div class="userinfo">
             <p class="username"><?php echo htmlspecialchars($chatName); ?></p>
         </div>
         <a href="settings.php?chat_id=<?php echo $chatId; ?>" id="gearIcon">
             <i class="fa-solid fa-gear"></i></a>
-
     </div>
     <section>
         <!-- Balance message -->

@@ -108,13 +108,16 @@ header nav ul li a {
 }
 
 .modal-content {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translate(-50%, 10%);
     background-color: #fff;
     margin: 15% auto;
-    /* Centered vertically */
     padding: 20px;
     border-radius: 10px;
-    width: 80%;
-    /* Adjust width as needed */
+    width: 90%;
+    height: 400px;
     max-width: 500px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -125,29 +128,40 @@ header nav ul li a {
 
 .modal-content label {
     display: block;
-    margin-top: 10px;
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
 
 .modal-content input {
     width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    height: 45px;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .modal-content button {
-    background-color: #007bff;
-    color: #fff;
+    margin-top: 20px;
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+    color: #000;
     border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: 15px 20px;
+    border-radius: 25px;
     cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .modal-content button:hover {
-    background-color: #0056b3;
+    background-color: rgba(235, 235, 235, 0.87);
 }
 
 .close {
@@ -162,35 +176,6 @@ header nav ul li a {
     color: #000;
 }
 
-.box1 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    margin: 10px;
-    border: 1px solid #ddd;
-    background-color: #E6E6E6;
-    border-radius: 6px;
-    height: 70px;
-    padding: 10px;
-}
-
-
-.credit {
-    margin-right: 10px;
-    width: 47%;
-    height: 100%;
-    background-color: #0373105a;
-    border-radius: 6px;
-}
-
-.debit {
-    margin-left: 10px;
-    width: 47%;
-    height: 100%;
-    background-color: #ff00005a;
-    border-radius: 6px;
-}
 
 /* .box2 {
     display: flex;
@@ -234,27 +219,253 @@ header nav ul li a {
 }
 
 
-/* .box4 .btn {
-    position: absolute;
-    bottom: 10px;
-    right: 20px;
-    padding: 15px 15px;
-    border-radius: 24px;
-    border: 1px solid #8D2F18;
-    background-color: #8D2F18;
-    color: #fff;
-    font-size: 16px;
-    font-weight: bolder;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(141, 47, 24, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    z-index: 1;
+/* Box2 App-Style */
+.box2 {
+    margin: 0;
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.box4 .btn:hover {
+.box2:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.box2 input[type="text"],
+.box2 input[type="date"],
+.box2 button {
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 14px;
+    transition: background-color 0.3s ease, box-shadow 0.2s ease;
+}
+
+.box2 input[type="text"],
+.box2 input[type="date"] {
+    width: 180px;
+    background-color: #f0f0f0;
+    color: #333;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.box2 input[type="text"]:focus,
+.box2 input[type="date"]:focus {
+    background-color: #fff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    outline: none;
+}
+
+.box2 button {
+    background-color: #6200ea;
+    color: white;
+    cursor: pointer;
+    border-radius: 20px;
+    padding: 8px 20px;
+}
+
+.box2 button:hover {
+    background-color: #3700b3;
+}
+
+.box2 button:active {
+    background-color: #03dac6;
+}
+
+.box2 input[type="text"],
+.box2 input[type="date"],
+.box2 button {
+    border-radius: 20px;
+}
+
+/* Box3 App-Style */
+
+.wrapper {
+    /* margin-top: 20px; */
+    /* height: 72vh; */
+    /* Limits the height of the wrapper to 70% of the viewport height */
+    overflow-y: auto;
+    /* Enables vertical scrolling when the content exceeds the height */
+    padding: 5px;
+    /* Optional padding to give space around the content */
+    box-sizing: border-box;
+    /* Ensures padding is included in the height calculation */
+}
+
+.box3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin: 10px 5px;
+    padding: 10px;
+    background-color: #fbfbfb;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+}
+
+.user {
+    display: flex;
+    flex: 1;
+    align-items: center;
+}
+
+.info {
+    margin-left: 15px;
+    max-width: 200px;
+}
+
+.info p {
+    margin: 0;
+    padding: 4px 0;
+    color: #000;
+    font-size: 14px;
+}
+
+.info p.name {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.info p.time {
+    font-size: 12px;
+    color: #333;
+    margin-top: 5px;
+}
+
+/* Centering the balance amount */
+.bal {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-right: 10px;
+    /* Center the balance amount */
+    /* flex: 1; */
+}
+
+/* Conditional color for balance */
+.bal.negative {
+    color: red;
+}
+
+.bal.positive {
+    color: green;
+}
+
+.bal.neutral {
+    color: #ffce1b;
+    /* Default color when balance is neutral */
+}
+
+
+.dock {
+    margin-top: 10px;
+    left: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    padding: 10px 10px;
+}
+
+/* Style for dock items (buttons) */
+.dock-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Style for individual buttons */
+.dock-item .button,
+.dock-item .btn {
+    padding: 12px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 30px;
+    /* Rounded corners */
+    margin-left: 10px;
+    margin-right: 10px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Styling for the 'Join Chat' Button */
+.dock-item .button {
+    background-color: rgb(255, 255, 255);
+    /* Blue color for the 'Join Chat' button */
+    color: black;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Styling for the '+ ADD Customer' Button */
+.dock-item .btn {
+    background-color: rgb(255, 255, 255);
+    /* Blue color for the 'Join Chat' button */
+    color: black;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Icons Styling */
+.dock-item .button i,
+.dock-item .btn i {
+    margin-right: 8px;
+    /* Space between icon and text */
+}
+
+/* Hover effect for buttons */
+.dock-item .button:hover,
+.dock-item .btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 20px rgba(141, 47, 24, 0.5);
-} */
+    /* Slightly enlarges the button on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    /* Adds a subtle shadow */
+}
+
+/* Styling for button focus */
+.dock-item .button:focus,
+.dock-item .btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.6);
+    /* Blue focus ring */
+}
+
+/* Adjust for smaller screens */
+@media (max-width: 768px) {
+    .dock {
+        bottom: 10px;
+        /* Adjust bottom margin on smaller screens */
+        gap: 10px;
+        /* Decrease space between buttons */
+    }
+
+    .dock-item .button,
+    .dock-item .btn {
+        width: 120px;
+        /* Slightly reduce button size */
+        font-size: 14px;
+    }
+}
 
 /* Tablets and smaller screens (768px and below) */
 @media (max-width: 768px) {
