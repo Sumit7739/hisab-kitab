@@ -8,69 +8,93 @@
  }
 
 
- body {
-     font-family: Poppins, sans-serif;
-     margin: 0;
-     padding: 0;
-     background: #B4C5DB;
- }
+
 
  section {
      margin: 20px;
  }
 
  /* Navbar Styles */
+
+ body {
+     font-family: Poppins, sans-serif;
+     margin: 0;
+     padding: 0;
+     background: #fbfbfb;
+ }
+
  .nav {
+     position: fixed;
+     top: 0;
+     left: 0;
      width: 100%;
      display: flex;
      justify-content: space-between;
      align-items: center;
-     background-color: #056068fd;
+     background-color: #fbfbfb;
      padding: 10px 20px;
      border-radius: 0 0 10px 10px;
-     color: white;
+     color: black;
+     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
  }
 
  .nav .userinfo {
      display: flex;
+     flex-direction: column;
      align-items: center;
+     /* Aligns the text to the left */
+     border: none;
+     margin-left: 10px;
+     /* Adjust spacing */
  }
 
  .nav .username {
      font-weight: bold;
-     margin-left: 10px;
+     font-size: 1.2rem;
+     /* Slightly larger font size for the chat name */
+     margin-bottom: 5px;
+     /* Adds space below the chat name */
  }
+
+ @keyframes blink {
+     10% {
+         opacity: 1;
+     }
+
+     50% {
+         opacity: 0.5;
+     }
+
+     /* Reduced opacity for smoother transition */
+     100% {
+         opacity: 1;
+     }
+ }
+
+ .nav .conUser {
+     font-size: 0.9rem;
+     font-weight: 500;
+     color: #037310ea;
+     /* Lighter color for distinction */
+     animation: blink 3s ease-in-out infinite;
+     /* Slower and smoother blinking */
+ }
+
 
  .nav i {
      font-size: 1.5rem;
  }
 
  .nav a {
-     color: white;
+     color: rgb(0, 0, 0);
      text-decoration: none;
      padding: 10px;
  }
 
- .transaction {
-     display: flex;
-     flex-direction: column;
-     gap: 10px;
-     /* Adds space between transaction boxes */
-     max-height: 75vh;
-     /* Limits the height to 80% of the viewport */
-     overflow-y: auto;
-     overflow-x: hidden;
-     /* Enables vertical scrolling if content exceeds max-height */
-     padding-right: 10px;
-     /* Adds some padding to the right for scrollbar spacing */
-     scrollbar-width: thin;
-     /* Adjust scrollbar width for modern browsers */
-     scrollbar-color: rgb(212, 18, 18);
-     /* Customize scrollbar colors */
- }
+
 
  .transaction::-webkit-scrollbar {
-     width: 8px;
+     width: 1px;
      /* Width of the scrollbar for WebKit-based browsers */
  }
 
@@ -84,19 +108,6 @@
  .transaction::-webkit-scrollbar-track {
      background-color: #f9f9f9;
      /* Scrollbar track color */
- }
-
- .transaction .box {
-     width: 100%;
-     /* background-color: #fff; */
-     /* White background for transaction boxes */
-     padding: 15px;
-     border-radius: 10px;
-     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-     /* Subtle shadow for better visibility */
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
  }
 
  .balance-message {
@@ -198,6 +209,7 @@
      color: #ff0000;
      font-size: 14px;
      margin-top: 10px;
+     margin-bottom: 20px;
      background-color: #fbfbfb;
      padding: 10px;
      border-radius: 10px;
@@ -308,67 +320,7 @@
      opacity: 0.9;
  }
 
- /* Buttons for the transactions */
- .addTransactions {
-     display: flex;
-     justify-content: center;
-     gap: 20px;
-     margin-top: 20px;
- }
 
- .addTransactions button {
-     padding: 10px 20px;
-     font-size: 16px;
-     border: none;
-     border-radius: 5px;
-     cursor: pointer;
- }
-
- .addTransactions button#debit-button {
-     background-color: #f44336;
-     /* Red for debit */
-     color: white;
- }
-
- .addTransactions button#credit-button {
-     background-color: #4CAF50;
-     /* Green for credit */
-     color: white;
- }
-
- .addTransactions button:hover {
-     opacity: 0.9;
- }
-
- /* Bottom Buttons */
- .addTransactions {
-     position: fixed;
-     bottom: 20px;
-     width: 90%;
-     display: flex;
-     justify-content: space-around;
-     margin-top: 20px;
- }
-
- .addTransactions button {
-     width: 45%;
-     padding: 15px 20px;
-     /* background-color: #f4b400; */
-     color: white;
-     border: none;
-     border-radius: 10px;
-     cursor: pointer;
-     font-size: 1rem;
-     transition: background-color 0.3s;
- }
-
- .addTransactions button.debits {
-     background-color: #ff00009a;
- }
-
- .addTransactions button.credits {
-     background-color: #0373109a;
- }
 
  /* Modal Styles */
  .modal {
@@ -415,7 +367,7 @@
  #gearIcon {
      font-size: 24px;
      cursor: pointer;
-     color: #fff;
+     color: #000000;
  }
 
 

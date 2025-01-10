@@ -12,7 +12,7 @@ include '../config.php'; // Update the path to your database configuration
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: signin.php");
+    header("Location: ../index.html");
     exit();
 }
 
@@ -27,16 +27,34 @@ if (!$chat_id) {
 // Function to fetch chat details and connection ID
 function getChatDetailsAndConnectionId($conn, $chat_id)
 {
-    // Query to join chats and connections table and fetch connection_id
+    // Query to join chats and connections table and fetch connection_id and user_id_2
     $chatQuery = "
-        SELECT c.chat_name, c.phone_number, c.email, con.connection_id 
-        FROM chats c
-        JOIN connections con ON c.chat_id = con.chat_id
-        WHERE c.chat_id = ?
+        SELECT 
+            c.chat_name, 
+            c.phone_number, 
+            c.email, 
+            con.connection_id,
+            con.user_id_2
+        FROM 
+            chats c
+        JOIN 
+            connections con ON c.chat_id = con.chat_id
+        WHERE 
+            c.chat_id = ?
     ";
 
     $stmt = $conn->prepare($chatQuery);
     $stmt->bind_param("i", $chat_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
+}
+
+// Function to fetch connected user details from the users table
+function getConnectedUserDetails($conn, $user_id_2)
+{
+    $userQuery = "SELECT name, phone FROM users WHERE user_id = ?";
+    $stmt = $conn->prepare($userQuery);
+    $stmt->bind_param("i", $user_id_2);
     $stmt->execute();
     return $stmt->get_result()->fetch_assoc();
 }
@@ -47,6 +65,17 @@ $chatData = getChatDetailsAndConnectionId($conn, $chat_id);
 // If no chat data is found, show an error and exit
 if (!$chatData) {
     die("No chat data found!");
+}
+
+// Fetch connected user details using user_id_2
+$connectedUserData = getConnectedUserDetails($conn, $chatData['user_id_2']);
+
+// If no connected user data is found, set a default message
+if (!$connectedUserData) {
+    $connectedUserData = [
+        'user_name' => 'Unknown',
+        'phone_number' => 'N/A'
+    ];
 }
 
 // Handle form submission to update chat details
@@ -89,7 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-
 ?>
 
 
@@ -108,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* General Page Styling */
         body {
             font-family: Arial, sans-serif;
-            /* background-color: #f4f7f6; */
+            background-color: #f4f7f6;
             margin: 0;
             padding: 0;
         }
@@ -117,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             max-width: 900px;
             margin: 20px auto;
             padding: 20px;
-            background: #B4C5DB;
+            background: #fbfbfb;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -144,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         label {
             display: block;
-            font-size: 16px;
+            font-size: 18px;
             color: #555;
             margin-bottom: 5px;
         }
@@ -406,6 +434,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- Form for Name, Phone, Email -->
+        <h2>Chat Settings</h2>
+        <div class="spacer"></div>
         <form id="settingsForm" action="settings.php?chat_id=<?php echo $chat_id; ?>" method="POST">
             <input type="hidden" name="chat_id" value="<?php echo $chat_id; ?>">
 
@@ -431,7 +461,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         <hr>
         <div class="spacer"></div>
-
+        <!-- connected user details -->
+        <div class="connected-user-details">
+            <h2>Connected User Details</h2>
+            <br>
+            <label for="username">Name:</label>
+            <input type="text" id="username" name="username" value="<?= htmlspecialchars($connectedUserData['name'] ?? '-- No Connection --'); ?>" readonly>
+            <label for="phone">Phone:</label>
+            <input type="text" id="phone" name="phone" value="<?= htmlspecialchars($connectedUserData['phone'] ?? 'N/A'); ?>" readonly>
+        </div>
+        <div class="spacer"></div>
+        <hr>
+        <div class="spacer"></div>
         <!-- OTP Section -->
         <h3>Generate and Fetch OTP</h3>
         <div class="spacer"></div>
