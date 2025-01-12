@@ -56,7 +56,7 @@ The app is accessible both as a web application and a mobile app, ensuring conve
 
 1. **Web Access**
 
-   - Visit the official website of Hisab Kitab [Visit](https://sumit11.serv00.com/HisabKitab).
+   - Visit the official website of Hisab Kitab [Visit](https://sumit11.serv00.net/HisabKitab).
 
 2. **Mobile Access**
 
