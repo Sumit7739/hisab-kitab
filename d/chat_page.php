@@ -205,7 +205,7 @@ $transactionList = array_reverse($transactionList);
             width: 100%;
             /* background-color: #fff; */
             /* White background for transaction boxes */
-            padding: 15px;
+            padding: 6px 10px;
             border-radius: 10px;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
             /* Subtle shadow for better visibility */
