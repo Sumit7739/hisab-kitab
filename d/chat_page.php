@@ -66,7 +66,7 @@ $customerEmail = $chatData['email'];
 
 // Fetch connected user's details from the connections table
 $fetchConnectedUserSQL = "
-    SELECT u.user_id, u.name, u.phone
+    SELECT u.user_id, u.name, u.phone, c.permission
     FROM connections c
     JOIN users u ON c.user_id_2 = u.user_id
     WHERE c.chat_id = ? AND c.connection_status = 'completed'";
@@ -76,12 +76,13 @@ $stmt->execute();
 $connectedUserResult = $stmt->get_result();
 
 $connectedUserData = [];
+$canAddTransaction = false;
 if ($connectedUserResult->num_rows > 0) {
     $connectedUserData = $connectedUserResult->fetch_assoc();
+    $canAddTransaction = ($connectedUserData['permission'] == 1 && ($userId == $connectedUserData['user_id'] || $userId == $creatorUserId));
 } else {
     $connectedUserData = ['name' => '', 'phone_number' => 'N/A'];
 }
-
 
 // Fetch all transactions for this chat
 $fetchTransactionsSQL = "SELECT * FROM transactions WHERE chat_id = ? ORDER BY transaction_date ASC";
@@ -113,8 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             try {
                 // Insert transaction into the database
-                $insertTransactionSQL = "INSERT INTO transactions (chat_id, user_id, transaction_type, amount, description, transaction_date, payment_date) 
-                                         VALUES (?, ?, ?, ?, ?, NOW(), ?)";
+                $insertTransactionSQL = "INSERT INTO transactions (chat_id, user_id, transaction_type, amount, description, transaction_date, is_read, payment_date) 
+                                         VALUES (?, ?, ?, ?, ?, NOW(), 0, ?)";
                 $stmt = $conn->prepare($insertTransactionSQL);
                 $stmt->bind_param("iisdss", $chatId, $userId, $transactionType, $amount, $description, $paymentDate);
                 $stmt->execute();
@@ -161,6 +162,7 @@ if ($transactionsResult->num_rows > 0) {
 $transactionList = array_reverse($transactionList);
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -212,6 +214,7 @@ $transactionList = array_reverse($transactionList);
             align-items: center;
             margin-top: 3px;
             margin-bottom: 8px;
+            margin-left: 5px;
         }
 
         .hold-to-delete {
@@ -279,7 +282,6 @@ $transactionList = array_reverse($transactionList);
         .hold-to-delete {
             -webkit-user-drag: none;
             /* Prevent drag */
-            user-drag: none;
             /* For modern browsers */
         }
 
@@ -518,8 +520,14 @@ $transactionList = array_reverse($transactionList);
         </a>
     </div>
     <div class="addTransactions">
-        <button type="button" id="debit-button" class="debits">You Gave ₹</button>
-        <button type="button" id="credit-button" class="credits">You Got ₹</button>
+        <!-- Only show buttons if the user has permission -->
+        <?php if ($canAddTransaction || $userId == $creatorUserId): ?>
+            <button type="button" id="debit-button" class="debits">You Gave ₹</button>
+            <button type="button" id="credit-button" class="credits">You Got ₹</button>
+        <?php else: ?>
+            <button type="button" class="debits" disabled>You Gave ₹</button>
+            <button type="button" class="credits" disabled>You Got ₹</button>
+        <?php endif; ?>
     </div>
     <section>
         <div class="transaction">

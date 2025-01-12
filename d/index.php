@@ -13,6 +13,27 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+
+// Assuming you're using mysqli to connect to the database
+$user_id = $_SESSION['user_id']; // Get the user_id from the session
+
+// Create the SQL query
+$sql = "SELECT name FROM users WHERE user_id = $user_id";
+
+// Execute the query
+$result = mysqli_query($conn, $sql);
+
+// Check if the query was successful
+if ($result) {
+    $user = mysqli_fetch_assoc($result); // Fetch the result as an associative array
+    $username = $user['name']; // Display the user's name
+} else {
+    echo "Error fetching user name.";
+}
+
+
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customerName = trim($_POST['customerName']);
     $customerPhone = trim($_POST['customerPhone']); // Get phone input
@@ -114,7 +135,7 @@ try {
 }
 
 if (empty($chats)) {
-    $errorMessage = "No chats found for the logged-in user.";  // Debug message when no chats are found
+    $errorMessage = "";  // Debug message when no chats are found
 }
 
 ?>
@@ -132,26 +153,120 @@ if (empty($chats)) {
 </head>
 
 <style>
+    .logo {
+        margin-top: 5px;
+        width: 250px;
+    }
 
+    .logo p {
+        font-size: 16px;
+    }
 
+    .errormsg {
+        width: 90%;
+        margin: 0 auto;
+        text-align: center;
+        color: #ff0000;
+        font-size: 16px;
+        font-weight: 600;
+        background-color: aliceblue;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .popup {
+        background: #fff;
+        width: 90%;
+        max-width: 450px;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        position: relative;
+    }
+
+    .popup h2 {
+        margin: 0;
+        font-size: 24px;
+        color: #333;
+    }
+
+    .popup p {
+        font-size: 16px;
+        color: #555;
+        margin: 10px 0;
+        line-height: 1.5;
+    }
+
+    .highlight {
+        font-weight: bold;
+        color: #4caf50;
+    }
+
+    .amount {
+        font-weight: bold;
+        color: #f44336;
+    }
+
+    .popup button {
+        background: #4caf50;
+        color: #fff;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: not-allowed;
+        margin-top: 15px;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+
+    .popup button.enabled {
+        cursor: pointer;
+        opacity: 1;
+    }
+
+    .popup button:hover {
+        background: #45a049;
+    }
 </style>
 
 <body>
     <header>
         <nav>
-            <div class="logo">Hisab-Kitab</div>
+            <div class="logo">
+                <p>Welcome, <?php echo htmlspecialchars($username); ?></p>
+            </div>
             <div class="hamburger" id="hamburger">
                 <i class="fa fa-bars"></i>
             </div>
             <ul class="menu" id="menu">
                 <li><a href="index.html"><i class="fa fa-user" id="active"></i>&nbsp; Parties</a></li>
-                <li><a href="all_notifications.php"><i class="fa fa-bell"></i>&nbsp; Notifications </a></li>
                 <li><a href="usersettings.php"><i class="fa fa-cog"></i>&nbsp; Settings</a></li>
+                <li><a href="comingsoon.html"><i class="fa fa-bell"></i>&nbsp; Notifications </a></li>
                 <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i>&nbsp; Logout</a></li>
             </ul>
         </nav>
     </header>
     <section>
+
+        <div class="loguser">
+
+        </div>
 
         <?php $user_id = $_SESSION['user_id']; ?>
         <!-- Dock at the bottom -->
@@ -201,7 +316,7 @@ if (empty($chats)) {
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p>No chats available. <?php echo isset($errorMessage) ? $errorMessage : ''; ?></p>
+                <p class="errormsg">Create a new Hisab-Kitab.</p>
             <?php endif; ?>
         </div>
 
@@ -222,6 +337,27 @@ if (empty($chats)) {
                 </form>
             </div>
         </div>
+
+        <div class="popup-overlay" id="popup-overlay">
+            <div class="popup">
+                <h2>🎉 Welcome to <span class="highlight">Hisab-Kitab!</span></h2>
+                <p>
+                    We're excited to have you on board! Here's the deal: <br> You can enjoy <span class="highlight">Full
+                        Access</span> to all features of our app for the next <span class="highlight">7 days</span>
+                    <strong>completely FREE!</strong> 🎁
+                </p>
+                <p>
+                    After your free trial ends, you'll only need to pay <span class="amount">₹50/month</span> to continue
+                    enjoying all the benefits.
+                </p>
+                <p>
+                    Use this opportunity to explore the app and experience its powerful features. We're confident you'll
+                    love it! 💖
+                </p>
+                <button id="continue-btn" disabled>Got It! Let's Get Started 🚀</button>
+            </div>
+        </div>
+
     </section>
     <script>
         const menu = document.getElementById('menu');
@@ -304,20 +440,57 @@ if (empty($chats)) {
                 }
             });
         }
-    
+
         // Add event listener to each chat box to redirect to chat page
         document.querySelectorAll('.box3').forEach(box => {
             box.addEventListener('click', function(event) {
-                // If the click was on the delete icon, don't redirect
-                if (event.target.closest('.delete-icon')) {
-                    return;
-                }
 
                 // Redirect to chat page
                 const chatId = box.id.split('_')[1];
                 window.location.href = `chat_page.php?chat_id=${chatId}`;
             });
         });
+
+        // Function to check if the popup should be shown
+        function shouldShowPopup() {
+            const lastShown = localStorage.getItem('popupShownAt');
+            const currentTime = new Date().getTime();
+
+            // Show the popup if it's the first time or 24 hours have passed
+            return !lastShown || currentTime - lastShown > 24 * 60 * 60 * 1000;
+        }
+
+        // Function to mark the popup as shown with the current timestamp
+        function markPopupAsShown() {
+            const currentTime = new Date().getTime();
+            localStorage.setItem('popupShownAt', currentTime);
+        }
+
+        // Show the popup and handle button disabling
+        function showPopup() {
+            const popupOverlay = document.getElementById('popup-overlay');
+            const continueButton = document.getElementById('continue-btn');
+
+            popupOverlay.style.display = 'flex';
+
+            // Disable the "Got It!" button for 7 seconds
+            continueButton.disabled = true; // Initially disable the button
+            setTimeout(() => {
+                continueButton.classList.add('enabled');
+                continueButton.disabled = false; // Enable the button after 7 seconds
+            }, 8000);
+
+            // Handle "Got It!" button click
+            continueButton.addEventListener('click', () => {
+                popupOverlay.style.display = 'none';
+                markPopupAsShown(); // Mark the popup as shown
+            });
+        }
+
+        // Check and show the popup if needed
+        if (shouldShowPopup()) {
+            showPopup();
+        }
     </script>
 </body>
 

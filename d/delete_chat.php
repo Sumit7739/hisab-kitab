@@ -22,9 +22,10 @@ if (!isset($_POST['chat_id']) || empty($_POST['chat_id'])) {
 }
 
 $chat_id = intval($_POST['chat_id']); // Sanitize the chat_id input
+$user_id = $_SESSION['user_id']; // Get the logged-in user ID
 
-// Check if chat_id exists in the database
-$checkQuery = "SELECT chat_id FROM chats WHERE chat_id = ?";
+// Check if chat_id exists in the database and fetch the creator's user_id
+$checkQuery = "SELECT chat_id, creator_user_id FROM chats WHERE chat_id = ?";
 $stmt = $conn->prepare($checkQuery);
 $stmt->bind_param("i", $chat_id);
 $stmt->execute();
@@ -32,6 +33,15 @@ $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
     echo json_encode(['success' => false, 'message' => 'Chat ID not found']);
+    exit();
+}
+
+$row = $result->fetch_assoc();
+$creator_user_id = $row['creator_user_id'];
+
+// Check if the logged-in user is the creator of the chat
+if ($creator_user_id != $user_id) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized: Only the chat creator can delete the chat']);
     exit();
 }
 

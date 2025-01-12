@@ -99,7 +99,7 @@ $conn->close();
     <script>
         // Countdown timer for redirection
         var countdownElement = document.getElementById('countdown');
-        var countdown = 2;
+        var countdown = 1;
 
         var timer = setInterval(function() {
             countdown--;

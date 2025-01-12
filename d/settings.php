@@ -21,7 +21,9 @@ $chat_id = isset($_GET['chat_id']) ? $_GET['chat_id'] : null; // Get chat_id fro
 
 // If no chat_id is passed, show an error and exit
 if (!$chat_id) {
-    die("Chat ID not found!");
+    echo "Chat ID not found!";
+    header("Refresh: 3; url=index.php");
+    exit();
 }
 
 // Function to fetch chat details and connection ID
@@ -33,7 +35,9 @@ function getChatDetailsAndConnectionId($conn, $chat_id)
             c.chat_name, 
             c.phone_number, 
             c.email, 
+            c.creator_user_id,
             con.connection_id,
+            con.permission,
             con.user_id_2
         FROM 
             chats c
@@ -50,6 +54,16 @@ function getChatDetailsAndConnectionId($conn, $chat_id)
 }
 
 // Function to fetch connected user details from the users table
+
+function getCreatorUserDetails($conn, $user_id)
+{
+    $usersQuery = "SELECT name, phone FROM users WHERE user_id =?";
+    $stmt = $conn->prepare($usersQuery);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
+}
+
 function getConnectedUserDetails($conn, $user_id_2)
 {
     $userQuery = "SELECT name, phone FROM users WHERE user_id = ?";
@@ -64,8 +78,22 @@ $chatData = getChatDetailsAndConnectionId($conn, $chat_id);
 
 // If no chat data is found, show an error and exit
 if (!$chatData) {
-    die("No chat data found!");
+    echo "No chat data found!";
+    header("Refresh: 3; url=index.php");
+    exit();
 }
+
+// Fetch creator user details using user_id
+$creatorUserData = getCreatorUserDetails($conn, $chatData['creator_user_id']);
+
+// If no creator user data is found, set a default message
+if (!$creatorUserData) {
+    $creatorUserData = [
+        'name' => 'Unknown',
+        'phone' => 'N/A'
+    ];
+}
+
 
 // Fetch connected user details using user_id_2
 $connectedUserData = getConnectedUserDetails($conn, $chatData['user_id_2']);
@@ -78,6 +106,7 @@ if (!$connectedUserData) {
     ];
 }
 
+// Handle form submission to update chat details
 // Handle form submission to update chat details
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $chat_id = $_POST['chat_id'];
@@ -100,6 +129,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate Email (only if provided)
     if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         echo json_encode(['success' => false, 'message' => 'Invalid email format!']);
+        exit();
+    }
+
+    // Verify if the logged-in user is the creator of the chat
+    $checkCreatorQuery = "SELECT creator_user_id FROM chats WHERE chat_id = ?";
+    $stmt = $conn->prepare($checkCreatorQuery);
+    $stmt->bind_param("i", $chat_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        echo json_encode(['success' => false, 'message' => 'Chat not found!']);
+        exit();
+    }
+
+    $row = $result->fetch_assoc();
+
+    // Check if the logged-in user is the creator of the chat
+    if ($row['creator_user_id'] != $_SESSION['user_id']) {
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: Only the chat creator can edit the chat details.']);
         exit();
     }
 
@@ -130,272 +179,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Edit Settings</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="chatpage.css">
+    <link rel="stylesheet" href="settings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* General Page Styling */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fbfbfb;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        h2,
-        h3 {
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        /* Form Styling */
-        form {
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-size: 18px;
-            color: #555;
-            margin-bottom: 5px;
-        }
-
-        input[type="text"],
-        input[type="email"] {
-            width: 100%;
-            height: 50px;
-            padding: 15px;
-            font-size: 18px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            box-sizing: border-box;
-            outline: none;
-            transition: border 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: inset 0 3px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        input[type="text"]:focus,
-        input[type="email"]:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        /* Buttons */
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* OTP Section Styling */
-        h3 {
-            color: #333;
-        }
-
-        #otp,
-        #otp_status,
-        #connection_status {
-            width: 100%;
-            padding: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            border: 1px solid #ddd;
-            border-radius: 14px;
-            margin-top: 10px;
-            margin-bottom: 15px;
-            background-color: #f9f9f9;
-        }
-
-        #otp:read-only,
-        #otp_status:read-only,
-        #connection_status:read-only {
-            background-color: #e9ecef;
-        }
-
-        #otp_status,
-        #connection_status {
-            font-size: 18px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        /* Spacer between sections */
-        .spacer {
-            margin-bottom: 30px;
-        }
-
-        /* Button container */
-        button#stopFetchBtn {
-            background-color: #dc3545;
-        }
-
-        button#stopFetchBtn:hover {
-            background-color: #c82333;
-        }
-
-        /* Make sure input fields are aligned properly */
-        input[type="text"],
-        input[type="email"],
-        button {
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-
-        form div {
-            margin-bottom: 20px;
-        }
-
-        .message-box {
-            text-align: center;
-            padding: 3px;
-            margin-top: 5px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            display: inline-block;
-            width: 100%;
-            max-width: 400px;
-            font-size: 16px;
-        }
-
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            /* background-color: #f9f9f9; */
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-        }
-
-
-        .userinfo p {
-            font-size: 22px;
-        }
-
-
-        /* Disabled button style */
-        #generateOtpBtn:disabled {
-            background-color: #888;
-            /* Dark gray for disabled state */
-            color: #ccc;
-            /* Light gray text */
-            cursor: not-allowed;
-            /* Change cursor to indicate it's disabled */
-        }
-
-        .delbtn {
-            width: 100%;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-        }
-
-        .delbtn:hover {
-            background-color: #d32f2f;
-        }
-
-        .btn h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #d32f2f;
-        }
-
-        .btn p {
-            font-size: 18px;
-            color: #d32f2f;
-        }
-
-        /* Popup overlay */
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 9999;
-        }
-
-        /* Popup content */
-        .popup-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
         /* Popup buttons */
         .popup-buttons {
             margin-top: 20px;
         }
 
         .popup-buttons button {
-            margin: 0 10px;
+            /* margin: 0 10px; */
             padding: 10px 20px;
             font-size: 14px;
             border: none;
@@ -426,17 +220,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="container">
 
-        <!-- Heading -->
-        <!-- <h1>Edit Settings</h1> -->
-        <!-- Message Section (Success/Error) -->
-        <div id="messageBox" class="message-box" style="display:none;">
-            <p id="messageText"></p>
-        </div>
+        <div class="spacer"></div>
+        <br>
+        <br>
+        <br>
 
         <!-- Form for Name, Phone, Email -->
-        <h2>Chat Settings</h2>
+        <h2 style="justify-content: center; align-items: center;text-align: center;">Chat Settings</h2>
         <div class="spacer"></div>
         <form id="settingsForm" action="settings.php?chat_id=<?php echo $chat_id; ?>" method="POST">
+
+            <div id="messageBox" class="message-box" style="display:none;">
+                <p id="messageText"></p>
+            </div>
             <input type="hidden" name="chat_id" value="<?php echo $chat_id; ?>">
 
             <div class="form-group">
@@ -460,10 +256,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </form>
         <hr>
+        <br><br>
+        <div class="creator-user-details">
+            <h2 style="justify-content: center; align-items: center;text-align: center;">Creator User Details</h2>
+            <label for="username">Name</label>
+            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($creatorUserData['name'] ?? '-- No Creator --'); ?>" readonly>
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($creatorUserData['phone'] ?? 'N/A'); ?>" readonly>
+        </div>
+        <br><br>
+        <hr>
         <div class="spacer"></div>
         <!-- connected user details -->
         <div class="connected-user-details">
-            <h2>Connected User Details</h2>
+            <h2 style="justify-content: center; align-items: center;text-align: center;">Connected User Details</h2>
             <br>
             <label for="username">Name:</label>
             <input type="text" id="username" name="username" value="<?= htmlspecialchars($connectedUserData['name'] ?? '-- No Connection --'); ?>" readonly>
@@ -472,16 +278,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <div class="spacer"></div>
         <hr>
+
+        <hr><br>
+        <div class="spacer"></div>
+        <div class="permission-toggle">
+            <span>Grant Permission To Add Entries:</span>
+            <div class="toggle-switch" data-connection-id="<?php echo $chatData['connection_id']; ?>" data-permission="<?php echo $chatData['permission']; ?>">
+                <div class="slider"></div>
+            </div>
+        </div>
+        <br><br>
+        <p style="font-size: 1.2rem; color: #555; margin-top: 5px; justify-content: center; align-items: center;text-align: center;">When the toggle is on, the connected user can add transactions.</p>
+        <br><br>
+        <hr>
+
         <div class="spacer"></div>
         <!-- OTP Section -->
-        <h3>Generate and Fetch OTP</h3>
+        <h2 style="justify-content: center; align-items: center;text-align: center;">Generate and Fetch OTP</h2>
         <div class="spacer"></div>
-        <p>Share the OTP to Connect other User</p>
+        <p style="justify-content: center; align-items: center;text-align: center;">Generate and share the OTP with the user to connect securely and enable transaction management.</p>
+
         <br>
 
         <div class="form-group">
             <button id="generateOtpBtn" disabled>Generate OTP</button> <!-- Button is disabled by default -->
         </div>
+        <br>
         <div class="form-group">
             <label for="otp">Generated OTP:</label>
             <input type="text" id="otp" readonly>
@@ -498,66 +320,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="form-group">
-            <button id="fetchOtpBtn">Get Status</button>
-            <!-- <button id="stopFetchBtn">Stop Status</button> -->
+            <!-- <button id="fetchOtpBtn">Get Status</button>
+            <button id="stopFetchBtn">Stop Status</button> -->
         </div>
+        <hr>
         <hr>
         <div class="spacer"></div>
         <div class="btn" data-chat-id="<?php echo $chat_id; ?>">
             <h3>Danger Zone</h3>
-            <p>Once you delete a chat, there is no going back. Please be certain.</p>
+
+            <!-- remove user code -->
+            <!-- <div class="spacer"></div>
+            <p>Remove Connected User</p>
+            <br>
+            <p>This will remove the connected user from this chat. They will no longer be able to access or view transactions.</p> -->
+
+            <!-- <div class="spacer"></div>
+            <button type="button" class="rembtn" id="removeUserBtn"><i class="fa-solid fa-trash"></i> Remove User</button> -->
+            <!-- <br>
+            <br><br>
+            <hr> -->
+            <!-- remove user code needs more work -->
+
+            <br>
+            <p>Deleting a chat is permanent. Please be sure before you do it.</p>
             <div class="spacer"></div>
-            <button type="button" class="delbtn">Delete Chat</button>
+            <button type="button" class="delbtn"><i class="fa-solid fa-trash"></i> Delete Chat</button>
         </div>
 
+        <!-- <div id="removeUserPopup" class="popup-overlay">
+            <div class="popup-content">
+                <h3>Confirm Removal</h3>
+                <p>Are you sure you want to remove this user from the chat?</p>
+                <button id="confirmRemove" style="margin: 10px; margin-top:40px; padding: 10px 20px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer; width: 300px">Yes, Remove</button>
+                <button id="cancelRemove" style="margin: 10px; padding: 10px 20px; background-color: grey; color: white; border: none; border-radius: 5px; cursor: pointer; width: 300px">Cancel</button>
+            </div>
+        </div> -->
 
         <!-- Popup Structure -->
         <div id="deletePopup" class="popup-overlay">
             <div class="popup-content">
                 <h3>Confirm Delete</h3>
                 <p>Are you sure you want to delete this chat?</p>
-                <button id="confirmDelete" style="margin: 10px; padding: 10px 20px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer;">Yes, Delete</button>
-                <button id="cancelDelete" style="margin: 10px; padding: 10px 20px; background-color: grey; color: white; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+                <button id="confirmDelete" style="margin-top:40px; padding: 10px 20px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer; width: 250px">Yes, Delete</button>
+                <button id="cancelDelete" style="padding: 10px 20px; background-color: grey; color: white; border: none; border-radius: 5px; cursor: pointer; width: 250px">Cancel</button>
             </div>
         </div>
-
-
     </div>
 
     <script>
         $(document).ready(function() {
 
-            // Get the connection_id from PHP and pass it to JavaScript
             const connectionId = <?php echo json_encode($chatData['connection_id']); ?>;
+            let chatIdToDelete = null;
 
-            // Function to check connection status and enable the OTP generation button
+            // Function to handle displaying messages
+            function showMessage(message, type) {
+                const bgColor = type === "success" ? "#28a745" : "#dc3545";
+                $("#messageBox").css({
+                    "background-color": bgColor,
+                    "color": "#fff",
+                    "padding": "10px"
+                }).fadeIn();
+                $("#messageText").text(message);
+
+                setTimeout(function() {
+                    $("#messageBox").fadeOut();
+                    if (type === 'success') location.reload();
+                }, 3000);
+
+                setTimeout(function() {
+                    $("#messageBox").fadeOut();
+                    if (type === 'error') location.reload();
+                }, 3000);
+            }
+
+            // Function to check connection status and enable OTP button
             function checkConnectionStatus() {
                 if (!connectionId) {
                     alert('No connection ID found.');
                     return;
                 }
 
-                // AJAX request to fetch OTP and connection status
                 $.ajax({
-                    url: 'fetch_otp_status.php', // PHP file that handles OTP status fetching
+                    url: 'fetch_otp_status.php',
                     type: 'GET',
                     data: {
                         connection_id: connectionId
                     },
                     success: function(response) {
                         if (response.success) {
-                            $('#otp').val(response.otp); // Display fetched OTP
-                            $('#otp_status').val(response.otp_status); // Display OTP status
-                            $('#connection_status').val(response.connection_status); // Display connection status
+                            $('#otp').val(response.otp);
+                            $('#otp_status').val(response.otp_status);
+                            $('#connection_status').val(response.connection_status);
 
-                            // Enable the Generate OTP button only if connection_status is 'pending' and OTP is not generated
-                            if (response.connection_status === 'pending' && response.otp_status !== 'OTP Generated') {
-                                $('#generateOtpBtn').prop('disabled', false); // Enable the button
-                            } else {
-                                $('#generateOtpBtn').prop('disabled', true); // Disable the button if OTP is generated or connection status is not 'pending'
-                            }
+                            // Enable button based on conditions
+                            $('#generateOtpBtn').prop('disabled', !(response.connection_status === 'pending' && response.otp_status !== 'OTP Generated'));
                         } else {
-                            $('#connection_status').val('Error: ' + response.message); // Display error in connection status
+                            $('#connection_status').val('Error: ' + response.message);
                         }
                     },
                     error: function() {
@@ -566,105 +426,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
             }
 
-            // Call the function to check connection status on page load
-            checkConnectionStatus();
-
-            // Generate OTP button click handler
-            $('#generateOtpBtn').click(function() {
+            // Function to generate OTP
+            function generateOtp() {
                 if (!connectionId) {
                     alert('No connection ID found.');
                     return;
                 }
 
-                // AJAX request to generate OTP
                 $.ajax({
-                    url: 'generate_otp.php', // PHP file that handles OTP generation
+                    url: 'generate_otp.php',
                     type: 'POST',
                     data: {
                         connection_id: connectionId
                     },
                     success: function(response) {
                         if (response.success) {
-                            $('#otp').val(response.otp); // Display the generated OTP
-                            $('#otp_status').val('OTP Generated'); // Update OTP status
-                            $('#generateOtpBtn').prop('disabled', true); // Disable the button after OTP is generated
+                            $('#otp').val(response.otp);
+                            $('#otp_status').val('OTP Generated');
+                            $('#generateOtpBtn').prop('disabled', true);
                         } else {
-                            $('#otp_status').val('Error: ' + response.message); // Display error in OTP status
+                            $('#otp_status').val('Error: ' + response.message);
                         }
                     },
                     error: function() {
                         $('#otp_status').val('An error occurred while generating OTP.');
                     }
                 });
-            });
+            }
 
-            // Set the interval to fetch OTP status every 5 seconds (5000 milliseconds)
-            // setInterval(checkConnectionStatus, 5000);
-
+            // Function to handle settings form submission
             $('#settingsForm').submit(function(event) {
-                event.preventDefault(); // Prevent the default form submission
-
-                var formData = $(this).serialize(); // Serialize form data
+                event.preventDefault();
 
                 $.ajax({
-                    url: 'settings.php?chat_id=<?php echo $chat_id; ?>', // PHP script handling form submission
+                    url: 'settings.php?chat_id=<?php echo $chat_id; ?>',
                     type: 'POST',
-                    data: formData,
+                    data: $(this).serialize(),
                     dataType: 'json',
                     success: function(response) {
-                        $('#messageBox').show();
                         if (response.success) {
-                            $('#messageText').text(response.message); // Display success message
-                            $('#messageBox').addClass('success');
-                            setTimeout(function() {
-                                location.reload();
-                            }, 3000);
+                            showMessage(response.message, 'success');
                         } else {
-                            $('#messageText').text(response.message); // Display error message
-                            $('#messageBox').addClass('error');
+                            showMessage(response.message, 'error');
                         }
                     },
                     error: function() {
-                        $('#messageText').text('An error occurred while updating settings.');
-                        $('#messageBox').show().addClass('error');
+                        showMessage('An error occurred while updating settings.', 'error');
                     }
                 });
             });
 
+            // Function to handle chat deletion
+            $(".delbtn").on("click", function() {
+                chatIdToDelete = $(this).closest(".btn").data("chat-id");
+                $("#deletePopup").fadeIn();
+            });
 
-            let chatIdToDelete = null;
-
-            $(document).ready(function() {
-                // Open the popup
-                $(".delbtn").on("click", function() {
-                    chatIdToDelete = $(this).closest(".btn").data("chat-id"); // Get chat ID from the closest .btn
-                    $("#deletePopup").fadeIn(); // Show the popup
-                });
-
-                // Close the popup on cancel button
-                $("#cancelDelete").on("click", function() {
-                    $("#deletePopup").fadeOut(); // Hide the popup
-                });
-
-                // Close the popup on clicking outside the box
-                $("#deletePopup").on("click", function(e) {
-                    if (e.target.id === "deletePopup") {
-                        $("#deletePopup").fadeOut(); // Hide the popup
-                    }
-                });
-
-                // Handle the confirm delete button
-                $("#confirmDelete").on("click", function() {
-                    if (chatIdToDelete) {
-                        console.log("Chat ID to delete:", chatIdToDelete); // Debugging log
-                        // Proceed with AJAX or further logic
-                    } else {
-                        alert("No chat ID selected.");
-                    }
+            // Close delete popup
+            $("#cancelDelete, #deletePopup").on("click", function(e) {
+                if (e.target.id === "deletePopup" || e.target.id === "cancelDelete") {
                     $("#deletePopup").fadeOut();
-                });
+                }
             });
-            // Handle the confirm delete button
+
+            // Confirm delete chat
             $("#confirmDelete").on("click", function() {
                 if (chatIdToDelete) {
                     $.ajax({
@@ -672,42 +497,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         type: "POST",
                         data: {
                             chat_id: chatIdToDelete
-                        }, // Pass the chat ID to the server
+                        },
                         success: function(response) {
                             try {
                                 let result = JSON.parse(response);
-
                                 if (result.success) {
-                                    alert("Chat deleted successfully!");
+                                    showMessage("Chat deleted successfully!", 'success');
                                     $(`.btn[data-chat-id="${chatIdToDelete}"]`).remove();
-                                    // add redirection to index.php page
-                                    location.href = "index.php";
+                                    // add reidrection to index.php page after 3 seconds
+                                    setTimeout(() => {
+                                        window.location.href = 'index.php';
+                                    }, 3000);
                                 } else {
-                                    alert(result.message || "Failed to delete chat.");
+                                    showMessage(result.message || "Failed to delete chat.", 'error');
                                 }
                             } catch (e) {
-                                console.error("Invalid JSON response", response);
-                                alert("An unexpected error occurred.");
+                                showMessage("Invalid response from the server. Please try again later.", 'error');
                             }
                         },
-                        error: function(xhr, status, error) {
-                            console.error("AJAX error:", error);
-                            alert("Failed to delete chat. Please try again later.");
-                        },
+                        error: function(xhr) {
+                            showMessage('Error - ' + xhr.status + ': ' + xhr.statusText, 'error');
+                        }
                     });
                 }
                 $("#deletePopup").fadeOut();
             });
 
-            // Close the popup on cancel or background click
-            $("#cancelDelete, #deletePopup").on("click", function(e) {
-                if (e.target.id === "cancelDelete" || e.target.id === "deletePopup") {
-                    $("#deletePopup").fadeOut();
-                }
+            // Handle permission toggle
+            $('.toggle-switch').each(function() {
+                const $toggle = $(this);
+                if ($toggle.data('permission') === 1) $toggle.addClass('active');
             });
+
+            $('.toggle-switch').on('click', function() {
+                const $toggle = $(this);
+                const connectionId = $toggle.data('connection-id');
+                const newPermission = $toggle.hasClass('active') ? 0 : 1;
+
+                $toggle.toggleClass('active');
+
+                $.ajax({
+                    url: 'update_permission.php',
+                    method: 'POST',
+                    data: {
+                        connection_id: connectionId,
+                        permission: newPermission,
+                        user_id: <?php echo $_SESSION['user_id']; ?>
+                    },
+                    success: function(response) {
+                        const res = JSON.parse(response);
+                        if (res.status === 'success') {
+                            showMessage("Permission updated successfully!", 'success');
+                        } else {
+                            showMessage("Error: " + res.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        showMessage('You do not have permission to update permissions. Please contact the administrator.', 'error');
+                    }
+                });
+            });
+
+            // Call connection status check initially and at intervals
+            checkConnectionStatus();
+            // setInterval(checkConnectionStatus, 5000); // Uncomment to check every 5 seconds
+
+            // Handle OTP generation
+            $('#generateOtpBtn').click(generateOtp);
         });
     </script>
-    <!-- dfads trn = 32, chat id =  11-->
 </body>
 
 </html>

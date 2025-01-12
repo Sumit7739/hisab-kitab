@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,20 +5,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verify OTP</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
       height: 100vh;
       color: #333;
+      /* display: flex; */
+      /* flex-direction: column; */
+      align-items: center;
+    }
+
+    .main {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       width: 90%;
       max-width: 400px;
       text-align: center;
@@ -98,10 +108,36 @@
     .footer a:hover {
       color: #0056b3;
     }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+    }
+
+
+    .hamburge{
+      position: absolute;  
+      top: 5px;
+      right: 0;
+      margin-right: 20px;
+    }
+
+    .hamburge i{
+      color: #333;
+      font-size: 24px;
+    }
   </style>
 </head>
 
 <body>
+  <header>
+    <nav>
+      <div class="logo">Hisab-Kitab</div>
+      <div class="hamburge">
+        <a href="index.php"><i class="fa fa-arrow-left"></i></a>
+      </div>
+    </nav>
+  </header>
   <?php
 
   include('../config.php');
@@ -111,18 +147,20 @@
     $user_id = $_GET['user_id'];
   ?>
 
-    <div class="container">
-      <div class="title">Enter OTP</div>
-      <div class="subtitle">We've sent a 4-digit code to your registered email.</div>
-      <form action="process_join_otp.php" method="POST">
-        <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
-        <div class="otp-input-container">
-          <input type="text" class="otp-input" id="otp" name="otp" placeholder="Enter OTP" required maxlength="10">
+    <div class="main">
+      <div class="container">
+        <div class="title">Enter OTP</div>
+        <div class="subtitle">Enter the OTP shared by the user to securely connect and manage transactions.</div>
+        <form action="process_join_otp.php" method="POST">
+          <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
+          <div class="otp-input-container">
+            <input type="text" class="otp-input" id="otp" name="otp" placeholder="Enter OTP" required maxlength="10">
+          </div>
+          <button type="submit" class="submit-btn">Verify</button>
+        </form>
+        <div class="footer">
+          Don't have the code? Ask the user to share it with you again.
         </div>
-        <button type="submit" class="submit-btn">Verify</button>
-      </form>
-      <div class="footer">
-        Didn't receive the code? <a href="#">Resend OTP</a>
       </div>
     </div>
   <?php
@@ -150,6 +188,7 @@
       });
     });
   </script>
+
 </body>
 
 </html>
