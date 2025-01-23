@@ -22,34 +22,22 @@ $chatId = $_GET['chat_id'];
 $userId = $_SESSION['user_id'];
 $errorMessage = "";
 
-// Check if the user is part of the chat and the connection is active
-$checkConnectionSQL = "SELECT * FROM connections WHERE chat_id = ? AND (user_id_1 = ? OR user_id_2 = ?) AND connection_status = 'completed'";
-$stmt = $conn->prepare($checkConnectionSQL);
-$stmt->bind_param("iii", $chatId, $userId, $userId);
+// Fetch the logged-in user's phone number
+$getUserPhoneSQL = "SELECT phone FROM users WHERE user_id = ?";
+$stmt = $conn->prepare($getUserPhoneSQL);
+$stmt->bind_param("i", $userId);
 $stmt->execute();
-$connectionResult = $stmt->get_result();
+$userResult = $stmt->get_result();
 
-// Check if the logged-in user is the creator of the chat
-$checkCreatorSQL = "SELECT creator_user_id FROM chats WHERE chat_id = ?";
-$stmt = $conn->prepare($checkCreatorSQL);
-$stmt->bind_param("i", $chatId);
-$stmt->execute();
-$creatorResult = $stmt->get_result();
-
-if ($creatorResult->num_rows == 0) {
-    die("Chat not found.");
+if ($userResult->num_rows == 0) {
+    die("User not found.");
 }
 
-$creatorData = $creatorResult->fetch_assoc();
-$creatorUserId = $creatorData['creator_user_id'];
+$userData = $userResult->fetch_assoc();
+$loggedInUserPhone = $userData['phone'];
 
-// Ensure the user is either connected or the creator
-if ($connectionResult->num_rows == 0 && $creatorUserId != $userId) {
-    die("You are not authorized to access this chat. Please ensure you are connected or are the creator.");
-}
-
-// Fetch chat details (chat_name and phone_number)
-$fetchChatSQL = "SELECT chat_name, phone_number, email FROM chats WHERE chat_id = ?";
+// Fetch chat details
+$fetchChatSQL = "SELECT creator_user_id, phone_number, chat_name, email FROM chats WHERE chat_id = ?";
 $stmt = $conn->prepare($fetchChatSQL);
 $stmt->bind_param("i", $chatId);
 $stmt->execute();
@@ -60,9 +48,37 @@ if ($chatResult->num_rows == 0) {
 }
 
 $chatData = $chatResult->fetch_assoc();
+$creatorUserId = $chatData['creator_user_id'];
+$chatPhoneNumber = $chatData['phone_number'];
 $chatName = $chatData['chat_name'];
-$customerPhone = $chatData['phone_number'];
 $customerEmail = $chatData['email'];
+
+// Check if phone numbers match and update the connections table
+if ($chatPhoneNumber == $loggedInUserPhone) {
+    // Update the connection table if phone numbers match and set connection status to 'completed'
+    $updateConnectionSQL = "UPDATE connections SET user_id_2 = ?, connection_status = 'completed' WHERE chat_id = ? AND user_id_1 = ?";
+    $stmt = $conn->prepare($updateConnectionSQL);
+    $stmt->bind_param("iii", $userId, $chatId, $creatorUserId);
+    if ($stmt->execute()) {
+        echo "Connection updated and status set to 'completed'.";
+    } else {
+        echo "Failed to update connection.";
+    }
+} else {
+    // Handle the case where phone numbers do not match
+    // echo "Phone number mismatch, unable to update connection.";
+}
+
+// Fetch the connection details to check if the user has permissions
+$checkConnectionSQL = "SELECT * FROM connections WHERE chat_id = ? AND (user_id_1 = ? OR user_id_2 = ?) AND connection_status = 'completed'";
+$stmt = $conn->prepare($checkConnectionSQL);
+$stmt->bind_param("iii", $chatId, $userId, $userId);
+$stmt->execute();
+$connectionResult = $stmt->get_result();
+
+if ($connectionResult->num_rows == 0 && $creatorUserId != $userId && $chatPhoneNumber != $loggedInUserPhone) {
+    die("You are not authorized to access this chat. Please ensure you are connected, are the creator, or have a matching phone number.");
+}
 
 // Fetch connected user's details from the connections table
 $fetchConnectedUserSQL = "
@@ -101,51 +117,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $transactionType = $_POST['transactionType'];
     $amount = $_POST['amount'];
     $description = isset($_POST['description']) ? $_POST['description'] : "";
-    // Ensure payment_date is a valid date or use today's date
     $paymentDate = isset($_POST['payment_date']) && !empty($_POST['payment_date']) ? $_POST['payment_date'] : date('Y-m-d');
 
-    // Basic validation
     if (empty($amount) || !is_numeric($amount)) {
         $errorMessage = "Please enter a valid amount.";
+    } elseif (!preg_match('/\d{4}-\d{2}-\d{2}/', $paymentDate)) {
+        $errorMessage = "Invalid date format. Please select a valid date.";
     } else {
-        // Additional validation for payment_date
-        if (!preg_match('/\d{4}-\d{2}-\d{2}/', $paymentDate)) {
-            $errorMessage = "Invalid date format. Please select a valid date.";
-        } else {
-            try {
-                // Insert transaction into the database
-                $insertTransactionSQL = "INSERT INTO transactions (chat_id, user_id, transaction_type, amount, description, transaction_date, is_read, payment_date) 
-                                         VALUES (?, ?, ?, ?, ?, NOW(), 0, ?)";
-                $stmt = $conn->prepare($insertTransactionSQL);
-                $stmt->bind_param("iisdss", $chatId, $userId, $transactionType, $amount, $description, $paymentDate);
-                $stmt->execute();
+        try {
+            $insertTransactionSQL = "INSERT INTO transactions (chat_id, user_id, transaction_type, amount, description, transaction_date, is_read, payment_date) 
+                                     VALUES (?, ?, ?, ?, ?, NOW(), 0, ?)";
+            $stmt = $conn->prepare($insertTransactionSQL);
+            $stmt->bind_param("iisdss", $chatId, $userId, $transactionType, $amount, $description, $paymentDate);
+            $stmt->execute();
 
-                // Redirect to refresh the transaction list
-                header("Location: chat_page.php?chat_id=$chatId");
-                exit();
-            } catch (Exception $e) {
-                $errorMessage = "Error: " . $e->getMessage();
-            }
+            header("Location: chat_page.php?chat_id=$chatId");
+            exit();
+        } catch (Exception $e) {
+            $errorMessage = "Error: " . $e->getMessage();
         }
     }
 }
 
-// Initialize an array to store transactions for HTML output
+// Prepare transaction data for output
 $transactionList = [];
-
 if ($transactionsResult->num_rows > 0) {
-    // Loop through each transaction to calculate balance and prepare HTML output
     while ($transaction = $transactionsResult->fetch_assoc()) {
-        // Calculate the running balance
         if ($transaction['transaction_type'] == 'debit') {
             $totalDebit += (float) $transaction['amount'];
-            $balance -= (float) $transaction['amount'];  // Debit reduces balance
+            $balance -= (float) $transaction['amount'];
         } else if ($transaction['transaction_type'] == 'credit') {
             $totalCredit += (float) $transaction['amount'];
-            $balance += (float) $transaction['amount'];  // Credit increases balance
+            $balance += (float) $transaction['amount'];
         }
 
-        // Add transaction details to the list for later display
         $transactionList[] = [
             'transaction_id' => $transaction['transaction_id'],
             'description' => htmlspecialchars($transaction['description']),
@@ -158,10 +163,11 @@ if ($transactionsResult->num_rows > 0) {
 } else {
     $transactionList[] = ['error' => 'No transactions found. Add a new transaction.'];
 }
-// Reverse the transaction list to show the transactions in the order they were added
-$transactionList = array_reverse($transactionList);
 
+$transactionList = array_reverse($transactionList);
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">

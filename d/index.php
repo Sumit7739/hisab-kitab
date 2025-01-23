@@ -13,27 +13,26 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Get the logged-in user's ID
+$user_id = $_SESSION['user_id'];
 
-// Assuming you're using mysqli to connect to the database
-$user_id = $_SESSION['user_id']; // Get the user_id from the session
+// Fetch logged-in user's details (including phone number)
+$sqlUserDetails = "SELECT name, phone FROM users WHERE user_id = ?";
+$stmtUserDetails = $conn->prepare($sqlUserDetails);
+$stmtUserDetails->bind_param("i", $user_id);
+$stmtUserDetails->execute();
+$resultUserDetails = $stmtUserDetails->get_result();
 
-// Create the SQL query
-$sql = "SELECT name FROM users WHERE user_id = $user_id";
-
-// Execute the query
-$result = mysqli_query($conn, $sql);
-
-// Check if the query was successful
-if ($result) {
-    $user = mysqli_fetch_assoc($result); // Fetch the result as an associative array
-    $username = $user['name']; // Display the user's name
+if ($resultUserDetails->num_rows > 0) {
+    $userDetails = $resultUserDetails->fetch_assoc();
+    $username = $userDetails['name'];
+    $userPhoneNumber = $userDetails['phone'];
 } else {
-    echo "Error fetching user name.";
+    echo "Error fetching user details.";
+    exit();
 }
 
-
-
-
+// Handle chat creation
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customerName = trim($_POST['customerName']);
     $customerPhone = trim($_POST['customerPhone']); // Get phone input
@@ -44,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Start transaction
             $conn->autocommit(false);
 
-            // Insert into chats table (with phone number and user_id)
+            // Insert into chats table
             $insertChatSQL = "INSERT INTO chats (chat_name, phone_number, creator_user_id) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($insertChatSQL);
             $stmt->bind_param("ssi", $customerName, $customerPhone, $userId);
@@ -52,20 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $chatId = $conn->insert_id;
 
             // Determine connection_type (based on user role or other logic)
-            $getUserRoleSQL = "SELECT name, role FROM users WHERE user_id = ?";
+            $getUserRoleSQL = "SELECT role FROM users WHERE user_id = ?";
             $stmt = $conn->prepare($getUserRoleSQL);
             $stmt->bind_param("i", $userId);
             $stmt->execute();
             $result = $stmt->get_result();
-            $name = $row['name'];
             $userRole = $result->fetch_assoc()['role'];
 
-            // Adjust connectionType based on user role
-            if ($userRole === 'admin') {
-                $connectionType = 'admin-user'; // Correct value for admin
-            } else {
-                $connectionType = 'user-user'; // Correct value for user
-            }
+            $connectionType = ($userRole === 'admin') ? 'admin-user' : 'user-user';
 
             // Insert into connections table
             $insertConnectionSQL = "INSERT INTO connections (user_id_1, connection_type, chat_id, connection_status) 
@@ -92,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Fetch all chats for the logged-in user (based on user_id)
+// Fetch all chats for the logged-in user
 $chats = [];
 try {
     // Fetch chats where the logged-in user is either the creator or connected to the chat
@@ -115,30 +108,59 @@ try {
             OR con.user_id_1 = ? 
             OR con.user_id_2 = ?
         GROUP BY 
-            c.chat_id ORDER BY t.transaction_date DESC
+            c.chat_id 
+        ORDER BY 
+            c.created_at DESC
     ";
     $stmt = $conn->prepare($fetchChatsSQL);
-    $stmt->bind_param("iii", $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']); // Bind user_id for creator and connection
+    $stmt->bind_param("iii", $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $chats[] = $row; // Store each chat in the $chats array
-        }
-    } else {
-        // Add debug message in case of error
-        $errorMessage = "Database query failed: " . $conn->error;
+    while ($row = $result->fetch_assoc()) {
+        $chats[] = $row;
     }
+
+    // Fetch chats where phone_number matches the logged-in user's phone number
+    $fetchChatsByPhoneSQL = "
+        SELECT 
+            c.chat_id, 
+            c.chat_name, 
+            c.phone_number, 
+            c.created_at, 
+            IFNULL(SUM(CASE WHEN t.transaction_type = 'debit' THEN t.amount ELSE 0 END), 0) AS total_debit, 
+            IFNULL(SUM(CASE WHEN t.transaction_type = 'credit' THEN t.amount ELSE 0 END), 0) AS total_credit
+        FROM 
+            chats c
+        LEFT JOIN 
+            transactions t ON c.chat_id = t.chat_id
+        WHERE 
+            c.phone_number = ?
+        GROUP BY 
+            c.chat_id 
+        ORDER BY 
+            c.created_at DESC
+    ";
+    $stmt = $conn->prepare($fetchChatsByPhoneSQL);
+    $stmt->bind_param("s", $userPhoneNumber);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $chats[] = $row;
+    }
+
+    // Deduplicate chats
+    $chats = array_map('unserialize', array_unique(array_map('serialize', $chats)));
 } catch (Exception $e) {
     $errorMessage = "Error: " . $e->getMessage();
 }
 
 if (empty($chats)) {
-    $errorMessage = "";  // Debug message when no chats are found
+    $errorMessage = "No chats found.";
 }
-
 ?>
+
 
 
 <!DOCTYPE html>
@@ -308,7 +330,7 @@ if (empty($chats)) {
                         </div>
                         <!-- Center the balance amount -->
                         <div class="bal" style="color: <?php
-                                                        $balance = $chat['total_credit'] - $chat['total_debit'];
+                                                        $balance = ($chat['total_credit'] ?? 0) - ($chat['total_debit'] ?? 0);
                                                         echo $balance < 0 ? 'red' : ($balance > 0 ? 'green' : '#ffce1b');
                                                         ?>">
                             ₹ <?php echo $balance; ?>
