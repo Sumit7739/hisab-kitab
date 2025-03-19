@@ -286,9 +286,9 @@ if (empty($chats)) {
     </header>
     <section>
 
-        <div class="loguser">
+        <!-- <div class="loguser">
 
-        </div>
+        </div> -->
 
         <?php $user_id = $_SESSION['user_id']; ?>
         <!-- Dock at the bottom -->
@@ -500,7 +500,7 @@ if (empty($chats)) {
             setTimeout(() => {
                 continueButton.classList.add('enabled');
                 continueButton.disabled = false; // Enable the button after 7 seconds
-            }, 8000);
+            }, 1000);
 
             // Handle "Got It!" button click
             continueButton.addEventListener('click', () => {

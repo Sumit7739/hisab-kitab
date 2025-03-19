@@ -1,0 +1,141 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+.container {
+  padding: 20px;
+}
+.stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+  height: 30px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.search-bar {
+  margin-top: 15px;
+}
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.dock {
+  max-width: 140px;
+  background-color: #f4f4f4;
+  z-index: 0;
+}
+
+.dock-item {
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dock-item .btn {
+  margin-top: -20px;
+}
+
+/* Popup specific styles */
+.popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.popup-content {
+  position: relative;
+  background-color: white;
+  margin: 5% auto;
+  padding: 20px;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.popup-content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.popup-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.popup-content label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.popup-content input,
+.popup-content select,
+.popup-content textarea {
+  width: 100%;
+  height: 35px;
+  font-size: 18px;
+  font-weight: 500;
+  /* text-align: center; */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  outline: none;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popup-content select {
+  padding: 0px 10px;
+}
+
+.popup-content button {
+  margin: 0 auto;
+  margin-top: 20px;
+  width: 48%;
+  background-color: rgb(255, 255, 255);
+  color: #000;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.popup-content .submit-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.popup-content .close-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 35px;
+  cursor: pointer;
+  color: #666;
+}

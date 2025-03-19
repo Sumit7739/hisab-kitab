@@ -1,149 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Popup Notification</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f4f4f4;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+      .container {
+        padding: 20px;
+      }
+      .stats {
+        display: flex;
+        justify-content: space-around;
+        gap: 10px;
+      }
+      .card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        width: 100%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .search-bar {
+        margin-top: 15px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .dock {
+        max-width: 140px;
+        background-color: #f4f4f4;
+        z-index: 0;
+      }
 
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
+      .dock-item {
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
-        .popup {
-            background: #fff;
-            width: 90%;
-            max-width: 450px;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            position: relative;
-        }
+      .dock-item .btn {
+        margin-top: -10px;
+      }
 
-        .popup h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #333;
-        }
+      /* Popup specific styles */
+      .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
 
-        .popup p {
-            font-size: 16px;
-            color: #555;
-            margin: 10px 0;
-            line-height: 1.5;
-        }
+      .popup-content {
+        position: relative;
+        background-color: white;
+        margin: 5% auto;
+        padding: 20px;
+        width: 90%;
+        max-width: 500px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
 
-        .highlight {
-            font-weight: bold;
-            color: #4caf50;
-        }
+      .popup-content h2 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #333;
+      }
 
-        .amount {
-            font-weight: bold;
-            color: #f44336;
-        }
+      .popup-content form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
 
-        .popup button {
-            background: #4caf50;
-            color: #fff;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: not-allowed;
-            margin-top: 15px;
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-        }
+      .popup-content label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
 
-        .popup button.enabled {
-            cursor: pointer;
-            opacity: 1;
-        }
+      .popup-content input,
+      .popup-content select,
+      .popup-content textarea {
+        width: 100%;
+        height: 35px;
+        font-size: 18px;
+        font-weight: 500;
+        /* text-align: center; */
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        outline: none;
+        transition: border 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-        .popup button:hover {
-            background: #45a049;
-        }
+      .popup-content select{
+        padding: 0px 10px;
+      }
+
+      .popup-content button {
+        margin: 0 auto;
+        margin-top: 20px;
+        width: 48%;
+        background-color: rgb(255, 255, 255);
+        color: #000;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .popup-content .submit-btn {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      .popup-content .close-btn {
+        background-color: #f44336;
+        color: white;
+      }
+
+      .close {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        font-size: 35px;
+        cursor: pointer;
+        color: #666;
+      }
     </style>
-</head>
-
-<body>
-    <div class="popup-overlay" id="popup-overlay">
-        <div class="popup">
-            <h2>🎉 Welcome to <span class="highlight">Hisab-Kitab!</span></h2>
-            <p>
-                We're excited to have you on board! Here's the deal: you can enjoy <span class="highlight">Full
-                    Access</span> to all features of our app for the next <span class="highlight">7 days</span>
-                <strong>completely FREE!</strong> 🎁
-            </p>
-            <p>
-                After your free trial ends, you'll only need to pay <span class="amount">₹50/month</span> to continue
-                enjoying all the benefits.
-            </p>
-            <p>
-                Use this opportunity to explore the app and experience its powerful features. We're confident you'll
-                love it! 💖
-            </p>
-            <button id="continue-btn" disabled>Got It! Let's Get Started 🚀</button>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo">
+          <p>Welcome,</p>
         </div>
+        <div class="hamburger" id="hamburger">
+          <i class="fa fa-bars"></i>
+        </div>
+        <ul class="menu" id="menu">
+          <li>
+            <a href="dashboard.php"
+              ><i class="fa fa-home" id="active"></i>  Dashboard</a
+            >
+          </li>
+          <li>
+            <a href="clients.html"><i class="fa fa-users"></i>  Clients</a>
+          </li>
+          <li>
+            <a href="index.php"><i class="fa fa-exchange"></i>  Transactions</a>
+          </li>
+          <li>
+            <a href="usersettings.php"><i class="fa fa-cog"></i>  Settings</a>
+          </li>
+          <li>
+            <a href="comingsoon.html"
+              ><i class="fa fa-bell"></i>  Notifications
+            </a>
+          </li>
+          <li>
+            <a href="logout.php" class="btn-logout"
+              ><i class="fa fa-sign-out"></i>  Logout</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="container">
+      <div class="stats">
+        <div class="card"><i class="fa fa-users"></i> Total Clients: 10000</div>
+
+        <div class="dock">
+          <!-- Add Customer Button -->
+          <div class="dock-item">
+            <button type="button" class="btn" id="addClientBtn">
+              <i class="fas fa-user-plus"></i> ADD+
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input type="text" placeholder="Search Clients..." />
+      </div>
+    </div>
+
+    <!-- Popup Form -->
+    <div class="popup" id="clientPopup">
+      <div class="popup-content">
+        <span class="close" id="closePopup">&times;</span>
+        <h2>Add New Client</h2>
+        <form id="clientForm">
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required />
+
+          <label for="phone_number">Phone Number:</label>
+          <input type="tel" id="phone_number" name="phone_number" required />
+
+          <label for="policy_number">Policy Number:</label>
+          <input type="text" id="policy_number" name="policy_number" required />
+
+          <label for="policy_type">Policy Type:</label>
+          <select id="policy_type" name="policy_type" required>
+            <option value="quarterly">Quarterly</option>
+            <option value="half-yearly">Half-Yearly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+
+          <label for="last_payment_date">Last Payment Date:</label>
+          <input
+            type="date"
+            id="last_payment_date"
+            name="last_payment_date"
+            required
+          />
+
+          <label for="next_due_date">Next Due Date:</label>
+          <input type="date" id="next_due_date" name="next_due_date" required />
+
+          <label for="notes">Notes:</label>
+          <textarea id="notes" name="notes" rows="4"></textarea>
+
+          <div>
+            <button type="submit" class="submit-btn">Add Client</button>
+            <button type="button" class="close-btn" id="cancelPopup">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script>
-        // Function to check if the popup should be shown
-        function shouldShowPopup() {
-            return !localStorage.getItem('popupShown');
+      const menu = document.getElementById("menu");
+      const hamburger = document.getElementById("hamburger");
+      const addClientBtn = document.getElementById("addClientBtn");
+      const clientPopup = document.getElementById("clientPopup");
+      const closePopup = document.getElementById("closePopup");
+      const cancelPopup = document.getElementById("cancelPopup");
+      const clientForm = document.getElementById("clientForm");
+
+      hamburger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        menu.classList.toggle("show");
+        hamburger.classList.toggle("active");
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!hamburger.contains(event.target) && !menu.contains(event.target)) {
+          menu.classList.remove("show");
+          hamburger.classList.remove("active");
         }
+      });
 
-        // Function to mark the popup as shown
-        function markPopupAsShown() {
-            localStorage.setItem('popupShown', 'true');
+      // Popup functionality
+      addClientBtn.addEventListener("click", () => {
+        clientPopup.style.display = "block";
+      });
+
+      closePopup.addEventListener("click", () => {
+        clientPopup.style.display = "none";
+        clientForm.reset();
+      });
+
+      cancelPopup.addEventListener("click", () => {
+        clientPopup.style.display = "none";
+        clientForm.reset();
+      });
+
+      clientPopup.addEventListener("click", (event) => {
+        if (event.target === clientPopup) {
+          clientPopup.style.display = "none";
+          clientForm.reset();
         }
+      });
 
-        // Show the popup and handle button disabling
-        function showPopup() {
-            const popupOverlay = document.getElementById('popup-overlay');
-            const continueButton = document.getElementById('continue-btn');
-
-            popupOverlay.style.display = 'flex';
-
-            // Disable the "Got It!" button for 7 seconds
-            continueButton.disabled = true; // Initially disable the button
-            setTimeout(() => {
-                continueButton.classList.add('enabled');
-                continueButton.disabled = false; // Enable the button after 7 seconds
-            }, 7000);
-
-            // Handle "Got It!" button click
-            continueButton.addEventListener('click', () => {
-                popupOverlay.style.display = 'none';
-                markPopupAsShown(); // Mark the popup as shown
-            });
-        }
-
-        // Check and show the popup if needed
-        if (shouldShowPopup()) {
-            showPopup();
-        }
+      clientForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        // Here you would typically send the form data to your server
+        console.log("Form submitted with data:", {
+          name: clientForm.name.value,
+          phone_number: clientForm.phone_number.value,
+          policy_number: clientForm.policy_number.value,
+          policy_type: clientForm.policy_type.value,
+          last_payment_date: clientForm.last_payment_date.value,
+          next_due_date: clientForm.next_due_date.value,
+          notes: clientForm.notes.value,
+        });
+        clientPopup.style.display = "none";
+        clientForm.reset();
+      });
     </script>
-
-</body>
-
+  </body>
 </html>

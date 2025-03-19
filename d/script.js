@@ -55,3 +55,4 @@ const debitPopup = document.querySelector('.debit-popup');
                 modal.style.display = "none";
             }
         }
+        

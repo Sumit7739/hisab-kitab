@@ -2,31 +2,37 @@
 session_start(); // Start the session
 
 if (!isset($_SESSION['user_id'])) {
-    // Redirect to the login page or any other appropriate page
+    // Redirect to the login page if not logged in
     header('Location: signin.php');
     exit();
 }
 
-// Include your database connection configuration
+// Include database connection
 include('../config.php');
 
-// Fetch the user's ID from the session
+// Fetch user ID from session
 $userID = $_SESSION['user_id'];
 
-// Prepare SQL query to fetch the user's name based on their ID
-$sql = "SELECT name FROM users WHERE user_id = '$userID'";
-
+// Prepare SQL query to fetch user details
+$sql = "SELECT name, role FROM users WHERE user_id = '$userID'";
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $name = $row['name'];
+    $role = $row['role']; // Fetch user role
 } else {
-    $name = "User"; // Default name if user's name is not found
+    $name = "User"; // Default name
+    $role = "user"; // Default role if not found
 }
 
 // Close the database connection
 $conn->close();
+
+// Determine redirection based on role
+$redirectPage = (strtolower($role) === 'admin') ? '../d/dashboard.php' : '../d/index.php';
+
+
 ?>
 
 <!DOCTYPE html>
@@ -36,7 +42,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
-    
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -90,7 +96,7 @@ $conn->close();
 
 <body>
     <div class="container">
-        <h1>Welcome <?php echo $name; ?></h1>
+        <h1>Welcome <?php echo htmlspecialchars($name); ?></h1>
         <p>We are setting things up for you. Please wait a few seconds.</p>
         <div class="countdown" id="countdown">Redirecting...</div>
         <div class="loader"></div>
@@ -106,7 +112,7 @@ $conn->close();
             countdownElement.textContent = 'Redirecting in ' + countdown + ' seconds...';
             if (countdown <= 0) {
                 clearInterval(timer);
-                window.location.href = '../d/index.php';
+                window.location.href = '<?php echo $redirectPage; ?>';
             }
         }, 1000);
     </script>
