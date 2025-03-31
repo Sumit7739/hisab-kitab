@@ -4,11 +4,14 @@ session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
 include '../config.php'; // Include your database connection file
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.html");
     exit();
 }
+
 // Check if user is admin (assuming you have a role column in your users table)
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT role FROM users WHERE user_id = ?");
@@ -17,10 +20,12 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
+
 if ($user['role'] !== 'admin') {
     header("Location: index.php");
     exit();
 }
+
 // Check Connection
 if ($conn->connect_error) {
     die(json_encode(["status" => "error", "message" => "Database connection failed: " . $conn->connect_error]));
@@ -79,13 +84,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $checkStmt->close();
 
+    // Insert the user_id of the logged-in user
     $stmt = $conn->prepare("
         INSERT INTO clients (
             name, phone_number, policy_number, policy_type, last_payment_date, next_premium, notes, 
-            opening_date, premium_amount, dob, sb, maturity_date, table_no, amount_paid
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            opening_date, premium_amount, dob, sb, maturity_date, table_no, amount_paid, user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
-        "ssssssssdsssss",
+        "ssssssssdsssssi",
         $name,
         $phone_number,
         $policy_number,
@@ -99,7 +105,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sb,
         $maturity_date,
         $table_no, // This will now be NULL if empty
-        $amount_paid
+        $amount_paid,
+        $user_id // Insert the logged-in user's user_id
     );
     if ($stmt->execute()) {
         echo json_encode(["status" => "success", "message" => "Client added successfully!"]);
@@ -111,8 +118,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit();
 }
 
-// Fetch client data for display
-$clients_result = $conn->query("SELECT id, name, policy_number FROM clients");
+// Fetch client data for display based on the logged-in user's user_id
+$clients_result = $conn->query("SELECT id, name, policy_number FROM clients WHERE user_id = $user_id");
 $clients = [];
 while ($row = $clients_result->fetch_assoc()) {
     $clients[] = $row;
@@ -268,7 +275,7 @@ while ($row = $clients_result->fetch_assoc()) {
         <div class="stats">
             <div class="card"><i class="fa fa-users"></i> Total Clients:
                 <?php
-                $count_result = $conn->query("SELECT COUNT(*) as total FROM clients");
+                $count_result = $conn->query("SELECT COUNT(*) as total FROM clients WHERE user_id = $user_id");
                 $count = $count_result->fetch_assoc();
                 echo $count['total'];
                 ?>
