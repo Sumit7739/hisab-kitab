@@ -277,6 +277,7 @@ if (empty($chats)) {
                 <i class="fa fa-bars"></i>
             </div>
             <ul class="menu" id="menu">
+                <li><a href="dashboard.php"><i class="fa fa-home"></i>&nbsp; Dashboard</a></li></li>
                 <li><a href="index.html"><i class="fa fa-user" id="active"></i>&nbsp; Parties</a></li>
                 <li><a href="usersettings.php"><i class="fa fa-cog"></i>&nbsp; Settings</a></li>
                 <li><a href="comingsoon.html"><i class="fa fa-bell"></i>&nbsp; Notifications </a></li>
@@ -285,11 +286,6 @@ if (empty($chats)) {
         </nav>
     </header>
     <section>
-
-        <!-- <div class="loguser">
-
-        </div> -->
-
         <?php $user_id = $_SESSION['user_id']; ?>
         <!-- Dock at the bottom -->
         <div class="dock">

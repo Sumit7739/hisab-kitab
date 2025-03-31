@@ -3,19 +3,15 @@ session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
 include '../config.php';
-
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.html");
     exit();
 }
-
 if (!isset($_GET['id'])) {
     header("Location: dashboard.php");
     exit();
 }
-
 $client_id = $_GET['id'];
 
 // Handle form submission for updates
@@ -25,12 +21,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $policy_number = trim($_POST["policy_number"]);
     $policy_type = trim($_POST["policy_type"]);
     $last_payment_date = !empty($_POST["last_payment_date"]) ? $_POST["last_payment_date"] : null;
-    $next_due_date = !empty($_POST["next_due_date"]) ? $_POST["next_due_date"] : null;
+    $next_premium = !empty($_POST["next_premium"]) ? $_POST["next_premium"] : null; // Updated column name
     $notes = trim($_POST["notes"]) ?: null;
+    $opening_date = !empty($_POST["opening_date"]) ? $_POST["opening_date"] : null;
+    $premium_amount = !empty($_POST["premium_amount"]) ? $_POST["premium_amount"] : null;
+    $dob = !empty($_POST["dob"]) ? $_POST["dob"] : null;
+    $sb = !empty($_POST["sb"]) ? $_POST["sb"] : null; // Survival Benefit
+    $maturity_date = !empty($_POST["maturity_date"]) ? $_POST["maturity_date"] : null;
 
-    $stmt = $conn->prepare("UPDATE clients SET name=?, phone_number=?, policy_number=?, policy_type=?, last_payment_date=?, next_due_date=?, notes=? WHERE id=?");
-    $stmt->bind_param("sssssssi", $name, $phone_number, $policy_number, $policy_type, $last_payment_date, $next_due_date, $notes, $client_id);
+    // Handle table_no: Convert empty string to NULL
+    $table_no = trim($_POST["table_no"]);
+    $table_no = ($table_no === '') ? null : $table_no;
 
+    $amount_paid = !empty($_POST["amount_paid"]) ? $_POST["amount_paid"] : null;
+
+    // Prepare and execute the UPDATE query
+    $stmt = $conn->prepare("
+        UPDATE clients 
+        SET name=?, phone_number=?, policy_number=?, policy_type=?, last_payment_date=?, next_premium=?, notes=?, 
+            opening_date=?, premium_amount=?, dob=?, sb=?, maturity_date=?, table_no=?, amount_paid=? 
+        WHERE id=?
+    ");
+    $stmt->bind_param(
+        "ssssssssdsssssi", // 14 fields + 1 ID = 15 variables
+        $name,
+        $phone_number,
+        $policy_number,
+        $policy_type,
+        $last_payment_date,
+        $next_premium,
+        $notes,
+        $opening_date,
+        $premium_amount,
+        $dob,
+        $sb,
+        $maturity_date,
+        $table_no,
+        $amount_paid,
+        $client_id // ID is the 15th variable
+    );
     if ($stmt->execute()) {
         $success_message = "Client updated successfully!";
     } else {
@@ -48,7 +77,6 @@ $client = $result->fetch_assoc();
 $stmt->close();
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -58,229 +86,11 @@ $conn->close();
     <title>Client Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="dash.css">
+    <link rel="stylesheet" href="clientprofile.css">
     <style>
-        :root {
-            --primary: #007bff;
-            --secondary: #6c757d;
-            --success: #28a745;
-            --danger: #dc3545;
-            --light: #f8f9fa;
-            --dark: #343a40;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-        }
-
-        .logo p {
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .menu {
-            display: flex;
-            list-style: none;
-            gap: 20px;
-        }
-
-        .menu li a {
-            color: var(--dark);
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-
-        .menu li a:hover,
-        .menu li a#active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .hamburger {
-            display: none;
-        }
-
-        .profile-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            width: 100%;
-            max-width: 700px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
-
-        .profile-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--light);
-            padding-bottom: 15px;
-        }
-
-        .profile-header h2 {
-            color: var(--dark);
+        .hamburger i {
             font-size: 24px;
-            font-weight: 600;
-        }
-
-        .profile-info {
-            display: grid;
-            gap: 15px;
-        }
-
-        .info-field {
-            display: flex;
-            flex-direction: column;
-            background: var(--light);
-            padding: 15px;
-            border-radius: 10px;
-            transition: all 0.3s;
-        }
-
-        .info-field label {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-
-        .info-field span,
-        .info-field input,
-        .info-field select,
-        .info-field textarea {
-            color: var(--secondary);
-            font-size: 16px;
-        }
-
-        .info-field input,
-        .info-field select,
-        .info-field textarea {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 8px;
-            background: white;
-            width: 100%;
-            display: none;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-            justify-content: center;
-        }
-
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .edit-btn {
-            background: var(--primary);
-            color: white;
-        }
-
-        .save-btn {
-            background: var(--success);
-            color: white;
-            display: none;
-        }
-
-        .cancel-btn {
-            background: var(--danger);
-            color: white;
-            display: none;
-        }
-
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-
-        .message {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 25px;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .message.show {
-            opacity: 1;
-        }
-
-        .success {
-            background: var(--success);
-        }
-
-        .error {
-            background: var(--danger);
-        }
-
-        .back-button {
-            font-size: 24px;
-        }
-
-        @media (max-width: 768px) {
-            .menu {
-                display: none;
-            }
-
-            .hamburger {
-                display: block;
-            }
-
-            .menu.show {
-                display: flex;
-                flex-direction: column;
-                position: absolute;
-                top: 60px;
-                left: 0;
-                right: 0;
-                background: white;
-                padding: 20px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            }
+            color: #333;
         }
     </style>
 </head>
@@ -294,43 +104,39 @@ $conn->close();
             <div class="hamburger" id="hamburger">
                 <a href="dashboard.php" class="back-button"><i class="fas fa-arrow-left"></i></a>
             </div>
-            <!-- <ul class="menu" id="menu">
-                <li><a href="dashboard.php"><i class="fa fa-home" id="active"></i> Dashboard</a></li>
-                <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li>
-                <li><a href="index.php"><i class="fa fa-exchange"></i> Transactions</a></li>
-                <li><a href="usersettings.php"><i class="fa fa-cog"></i> Settings</a></li>
-                <li><a href="comingsoon.html"><i class="fa fa-bell"></i> Notifications</a></li>
-                <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> Logout</a></li>
-            </ul> -->
         </nav>
     </header>
-
     <div id="message" class="message <?php echo isset($success_message) ? 'success show' : (isset($error_message) ? 'error show' : ''); ?>">
         <?php echo isset($success_message) ? $success_message : (isset($error_message) ? $error_message : ''); ?>
     </div>
-
     <div class="profile-container">
         <form id="profileForm" method="POST">
             <div class="profile-header">
                 <h2>Client Profile</h2>
-
             </div>
             <div class="profile-info">
+                <!-- Name -->
                 <div class="info-field">
                     <label>Name:</label>
                     <span><?php echo htmlspecialchars($client['name'] ?? ''); ?></span>
                     <input type="text" name="name" value="<?php echo htmlspecialchars($client['name'] ?? ''); ?>" required>
                 </div>
+
+                <!-- Phone Number -->
                 <div class="info-field">
                     <label>Phone Number:</label>
                     <span><?php echo htmlspecialchars($client['phone_number'] ?? 'Not provided'); ?></span>
                     <input type="tel" name="phone_number" value="<?php echo htmlspecialchars($client['phone_number'] ?? ''); ?>">
                 </div>
+
+                <!-- Policy Number -->
                 <div class="info-field">
                     <label>Policy Number:</label>
                     <span><?php echo htmlspecialchars($client['policy_number'] ?? ''); ?></span>
                     <input type="text" name="policy_number" value="<?php echo htmlspecialchars($client['policy_number'] ?? ''); ?>" required>
                 </div>
+
+                <!-- Policy Type -->
                 <div class="info-field">
                     <label>Policy Type:</label>
                     <span><?php echo htmlspecialchars($client['policy_type'] ?? ''); ?></span>
@@ -340,16 +146,71 @@ $conn->close();
                         <option value="yearly" <?php echo ($client['policy_type'] === 'yearly') ? 'selected' : ''; ?>>Yearly</option>
                     </select>
                 </div>
+
+                <!-- Opening Date -->
+                <div class="info-field">
+                    <label>Opening Date:</label>
+                    <span><?php echo htmlspecialchars($client['opening_date'] ?? 'Not set'); ?></span>
+                    <input type="date" name="opening_date" value="<?php echo htmlspecialchars($client['opening_date'] ?? ''); ?>">
+                </div>
+
+                <!-- Premium Amount -->
+                <div class="info-field">
+                    <label>Premium Amount:</label>
+                    <span><?php echo htmlspecialchars($client['premium_amount'] ?? 'Not set'); ?></span>
+                    <input type="number" step="0.01" name="premium_amount" value="<?php echo htmlspecialchars($client['premium_amount'] ?? ''); ?>">
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="info-field">
+                    <label>Date of Birth:</label>
+                    <span><?php echo htmlspecialchars($client['dob'] ?? 'Not set'); ?></span>
+                    <input type="date" name="dob" value="<?php echo htmlspecialchars($client['dob'] ?? ''); ?>">
+                </div>
+
+                <!-- Survival Benefit (SB) -->
+                <div class="info-field">
+                    <label>Survival Benefit (SB):</label>
+                    <span><?php echo htmlspecialchars($client['sb'] ?? 'Not set'); ?></span>
+                    <input type="number" step="0.01" name="sb" value="<?php echo htmlspecialchars($client['sb'] ?? ''); ?>">
+                </div>
+
+                <!-- Maturity Date -->
+                <div class="info-field">
+                    <label>Maturity Date:</label>
+                    <span><?php echo htmlspecialchars($client['maturity_date'] ?? 'Not set'); ?></span>
+                    <input type="date" name="maturity_date" value="<?php echo htmlspecialchars($client['maturity_date'] ?? ''); ?>">
+                </div>
+
+                <!-- Next Premium Date -->
+                <div class="info-field">
+                    <label>Next Premium Date:</label>
+                    <span><?php echo htmlspecialchars($client['next_premium'] ?? 'Not set'); ?></span>
+                    <input type="date" name="next_premium" value="<?php echo htmlspecialchars($client['next_premium'] ?? ''); ?>">
+                </div>
+
+                <!-- Table Number -->
+                <div class="info-field">
+                    <label>Table Number:</label>
+                    <span><?php echo htmlspecialchars($client['table_no'] ?? 'Not set'); ?></span>
+                    <input type="text" name="table_no" value="<?php echo htmlspecialchars($client['table_no'] ?? ''); ?>">
+                </div>
+
+                <!-- Amount Paid -->
+                <div class="info-field">
+                    <label>Amount Paid:</label>
+                    <span><?php echo htmlspecialchars($client['amount_paid'] ?? 'Not set'); ?></span>
+                    <input type="number" step="0.01" name="amount_paid" value="<?php echo htmlspecialchars($client['amount_paid'] ?? ''); ?>">
+                </div>
+
+                <!-- Last Payment Date -->
                 <div class="info-field">
                     <label>Last Payment Date:</label>
                     <span><?php echo htmlspecialchars($client['last_payment_date'] ?? 'Not set'); ?></span>
                     <input type="date" name="last_payment_date" value="<?php echo htmlspecialchars($client['last_payment_date'] ?? ''); ?>">
                 </div>
-                <div class="info-field">
-                    <label>Next Due Date:</label>
-                    <span><?php echo htmlspecialchars($client['last_payment_date'] ?? 'Not set'); ?></span>
-                    <input type="date" name="next_due_date" value="<?php echo htmlspecialchars($client['next_due_date'] ?? ''); ?>">
-                </div>
+
+                <!-- Notes -->
                 <div class="info-field">
                     <label>Notes:</label>
                     <span><?php echo htmlspecialchars($client['notes'] ?? 'No notes'); ?></span>
@@ -363,10 +224,7 @@ $conn->close();
             </div>
         </form>
     </div>
-
     <script>
-        const menu = document.getElementById("menu");
-        const hamburger = document.getElementById("hamburger");
         const editBtn = document.querySelector('.edit-btn');
         const saveBtn = document.querySelector('.save-btn');
         const cancelBtn = document.querySelector('.cancel-btn');
@@ -374,19 +232,7 @@ $conn->close();
         const infoFields = document.querySelectorAll('.info-field');
         const message = document.getElementById('message');
 
-        hamburger.addEventListener("click", (event) => {
-            event.stopPropagation();
-            menu.classList.toggle("show");
-            hamburger.classList.toggle("active");
-        });
-
-        document.addEventListener("click", (event) => {
-            if (!hamburger.contains(event.target) && !menu.contains(event.target)) {
-                menu.classList.remove("show");
-                hamburger.classList.remove("active");
-            }
-        });
-
+        // Edit button functionality
         editBtn.addEventListener('click', () => {
             infoFields.forEach(field => {
                 field.querySelector('span').style.display = 'none';
@@ -397,6 +243,7 @@ $conn->close();
             cancelBtn.style.display = 'inline-block';
         });
 
+        // Cancel button functionality
         cancelBtn.addEventListener('click', () => {
             infoFields.forEach(field => {
                 field.querySelector('span').style.display = 'block';
@@ -406,10 +253,6 @@ $conn->close();
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
             profileForm.reset();
-        });
-
-        profileForm.addEventListener('submit', (e) => {
-            // Form submission handled by PHP above
         });
 
         // Hide message after 3 seconds
