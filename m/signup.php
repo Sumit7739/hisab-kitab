@@ -41,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Check if the user was successfully inserted
         if ($stmt->affected_rows > 0) {
             // User created successfully
-            $_SESSION['id'] = $stmt->insert_id;
+            $_SESSION['user_id'] = $stmt->insert_id;
             $stmt->close();
 
             // Redirect to user dashboard or welcome page after successful registration
-            header('Location: welcome.php');
+            header('Location: signin.php');
             exit();
         } else {
             $error_message = "Failed to create user";

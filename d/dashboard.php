@@ -225,26 +225,9 @@ while ($row = $clients_result->fetch_assoc()) {
             font-size: 14px;
         }
 
-        .dock {
-            margin-top: -0px;
-            /* border: 1px solid; */
-            /* display: flex; */
-            /* height: auto; */
-        }
-
-        .dock-item {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* padding: 10px; */
-            padding-bottom: 10px;
-            /* border: 1px solid red; */
-            height: auto;
-        }
-
-        .dock-item .btn {
-            margin-top: 0px;
+        .client-card:hover {
+            background: #f0f0f0;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -294,8 +277,8 @@ while ($row = $clients_result->fetch_assoc()) {
         <div class="client-cards" id="clientCards">
             <?php foreach ($clients as $client): ?>
                 <a href="clientprofile.php?id=<?php echo htmlspecialchars($client['id']); ?>" class="client-card">
-                    <p><strong>Name:</strong> <?php echo htmlspecialchars($client['name']); ?></p>
-                    <p><strong>Policy:</strong> <?php echo htmlspecialchars($client['policy_number']); ?></p>
+                    <p><strong>Name: <?php echo htmlspecialchars($client['name']); ?></strong></p>
+                    <p><strong>Policy No: <?php echo htmlspecialchars($client['policy_number']); ?></strong></p>
                 </a>
             <?php endforeach; ?>
         </div>

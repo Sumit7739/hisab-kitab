@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $stmt->close();
             $conn->close();
-            header("Location: welcome.php");
+            header("Location: welcome_first.php");
             exit();
         } else {
             $error_message = "Invalid password"; // Invalid password error

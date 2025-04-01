@@ -101,7 +101,7 @@ $conn->close();
             <div class="logo">
                 <p>Hisab Kitab</p>
             </div>
-            <div class="hamburger" id="hamburger">
+            <div>
                 <a href="dashboard.php" class="back-button"><i class="fas fa-arrow-left"></i></a>
             </div>
         </nav>
@@ -113,6 +113,8 @@ $conn->close();
         <form id="profileForm" method="POST">
             <div class="profile-header">
                 <h2>Client Profile</h2>
+
+                <button type="button" class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
             </div>
             <div class="profile-info">
                 <!-- Name -->
@@ -218,7 +220,6 @@ $conn->close();
                 </div>
             </div>
             <div class="buttons">
-                <button type="button" class="edit-btn">Edit</button>
                 <button type="submit" class="save-btn">Save</button>
                 <button type="button" class="cancel-btn">Cancel</button>
             </div>
