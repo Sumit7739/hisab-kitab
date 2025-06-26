@@ -275,7 +275,7 @@ if (empty($chats)) {
         left: 50%;
         transform: translate(-50%, -50%);
         width: 90%;
-        position: absolute;
+        position: fixed;
         bottom: 0;
         background: rgb(255, 255, 255);
         padding: 0px;
