@@ -9,7 +9,7 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: #B4C5DB;
+    background: #f0f0f0;
     justify-content: center;
     align-items: center;
     height: 100%;
@@ -33,8 +33,7 @@ nav {
 }
 
 .logo {
-    margin-right: auto;
-    /* Pushes the logo to the left */
+    margin: auto;
 }
 
 .hamburger {
@@ -67,26 +66,7 @@ nav {
     /* Show the X icon */
 }
 
-header nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    /* Keep links in a row on larger screens */
-    justify-content: flex-end;
-    /* Align links to the right */
-    align-items: center;
-    /* Center links vertically */
-}
-
-header nav ul li {
-    margin-left: 20px;
-}
-
-header nav ul li a {
-    color: rgb(0, 0, 0);
-    text-decoration: none;
-}
+/*  */
 
 .logo {
     font-size: 24px;
@@ -393,7 +373,7 @@ header nav ul li a {
 /* Style for individual buttons */
 .dock-item .button,
 .dock-item .btn {
-    padding: 12px 15px;
+    padding: 12px 25px;
     font-size: 16px;
     font-weight: bold;
     text-align: center;
@@ -404,7 +384,7 @@ header nav ul li a {
     border: none;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 150px;
+    width: 170px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -544,6 +524,6 @@ header nav ul li a {
     }
 }
 
-#active {
+/* #active {
     color: rgb(255, 0, 0);
-}
+} */

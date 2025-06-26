@@ -12,6 +12,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// ! -> true -> false / false -> true 0 -> 1, 1 -> 0
+
 // Check if user is admin (assuming you have a role column in your users table)
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT role FROM users WHERE user_id = ?");
@@ -229,6 +231,54 @@ while ($row = $clients_result->fetch_assoc()) {
             background: #f0f0f0;
             cursor: pointer;
         }
+
+        .dock2 {
+            margin: 0 auto;
+            justify-content: center;
+            align-items: center;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            position: absolute;
+            bottom: 0;
+            background: rgb(255, 255, 255);
+            padding: 0px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+        }
+
+        .dock2 ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 auto;
+            display: flex;
+
+            justify-content: space-around;
+
+            align-items: center;
+        }
+
+        .dock2 ul li {
+            margin: 10px;
+        }
+
+        .dock2 ul li a {
+            color: rgb(0, 0, 0);
+            text-decoration: none;
+        }
+
+        .dock2 .menu i {
+            /* background-color: rgb(48, 48, 48); */
+            font-size: 18px;
+        }
+
+        .dock2 .menu .active2 {
+            background-color: rgb(122, 122, 122);
+            padding: 15px;
+            border-radius: 50%;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -239,16 +289,8 @@ while ($row = $clients_result->fetch_assoc()) {
                 <p>Welcome, <?php echo htmlspecialchars($username); ?></p>
             </div>
             <div class="hamburger" id="hamburger">
-                <i class="fa fa-bars"></i>
+                <!-- <i class="fa fa-bars"></i> -->
             </div>
-            <ul class="menu" id="menu">
-                <li><a href="dashboard.php"><i class="fa fa-home" id="active"></i> Dashboard</a></li>
-                <!-- <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li> -->
-                <li><a href="index.php"><i class="fa fa-exchange"></i> Transactions</a></li>
-                <li><a href="usersettings.php"><i class="fa fa-cog"></i> Settings</a></li>
-                <li><a href="comingsoon.html"><i class="fa fa-bell"></i> Notifications</a></li>
-                <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> Logout</a></li>
-            </ul>
         </nav>
     </header>
 
@@ -327,6 +369,18 @@ while ($row = $clients_result->fetch_assoc()) {
             </form>
         </div>
     </div>
+
+    <div class="dock2">
+        <ul class="menu" id="menu">
+            <li><a href="dashboard.php"><i class="fa fa-home active2" id="active"></i></a></li>
+            <!-- <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li> -->
+            <li><a href="index.php"><i class="fa fa-exchange"></i> </a></li>
+            <li><a href="usersettings.php"><i class="fa fa-cog"></i> </a></li>
+            <li><a href="comingsoon.html"><i class="fa fa-bell"></i> </a></li>
+            <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> </a></li>
+        </ul>
+    </div>
+
     <script>
         // Store initial client data from PHP
         const clients = <?php echo json_encode($clients); ?>;

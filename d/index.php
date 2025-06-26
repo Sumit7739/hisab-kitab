@@ -177,11 +177,13 @@ if (empty($chats)) {
 <style>
     .logo {
         margin-top: 5px;
-        width: 250px;
+        width: 100%;
+        text-align: center;
+        /* border: 1px solid; */
     }
 
     .logo p {
-        font-size: 16px;
+        font-size: 20px;
     }
 
     .errormsg {
@@ -265,6 +267,54 @@ if (empty($chats)) {
     .popup button:hover {
         background: #45a049;
     }
+
+    .dock2 {
+        margin: 0 auto;
+        justify-content: center;
+        align-items: center;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        position: absolute;
+        bottom: 0;
+        background: rgb(255, 255, 255);
+        padding: 0px;
+        border: 1px solid #ddd;
+        border-radius: 30px;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    }
+
+    .dock2 ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        display: flex;
+
+        justify-content: space-around;
+
+        align-items: center;
+    }
+
+    .dock2 ul li {
+        margin: 10px;
+    }
+
+    .dock2 ul li a {
+        color: rgb(0, 0, 0);
+        text-decoration: none;
+    }
+
+    .dock2 .menu i {
+        /* background-color: rgb(48, 48, 48); */
+        font-size: 18px;
+    }
+
+    .dock2 .menu .active2 {
+        background-color: rgb(122, 122, 122);
+        padding: 15px;
+        border-radius: 50%;
+        color: #fff;
+    }
 </style>
 
 <body>
@@ -274,15 +324,8 @@ if (empty($chats)) {
                 <p>Welcome, <?php echo htmlspecialchars($username); ?></p>
             </div>
             <div class="hamburger" id="hamburger">
-                <i class="fa fa-bars"></i>
+                <!-- <i class="fa fa-bars"></i> -->
             </div>
-            <ul class="menu" id="menu">
-                <li><a href="dashboard.php"><i class="fa fa-home"></i>&nbsp; Dashboard</a></li></li>
-                <li><a href="index.html"><i class="fa fa-user" id="active"></i>&nbsp; Parties</a></li>
-                <li><a href="usersettings.php"><i class="fa fa-cog"></i>&nbsp; Settings</a></li>
-                <li><a href="comingsoon.html"><i class="fa fa-bell"></i>&nbsp; Notifications </a></li>
-                <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i>&nbsp; Logout</a></li>
-            </ul>
         </nav>
     </header>
     <section>
@@ -292,7 +335,7 @@ if (empty($chats)) {
             <!-- Join Chat Button -->
             <div class="dock-item">
                 <button type="button" class="button" onclick="window.location.href='join.php?user_id=<?php echo $user_id; ?>';">
-                    <i class="fas fa-comments"></i> Join Chat
+                    <i class="fas fa-comments"></i> Join
                 </button>
             </div>
 
@@ -356,7 +399,7 @@ if (empty($chats)) {
             </div>
         </div>
 
-        <div class="popup-overlay" id="popup-overlay">
+        <!-- <div class="popup-overlay" id="popup-overlay">
             <div class="popup">
                 <h2>🎉 Welcome to <span class="highlight">Hisab-Kitab!</span></h2>
                 <p>
@@ -374,9 +417,22 @@ if (empty($chats)) {
                 </p>
                 <button id="continue-btn" disabled>Got It! Let's Get Started 🚀</button>
             </div>
-        </div>
+        </div> -->
+
 
     </section>
+
+    <div class="dock2">
+        <ul class="menu" id="menu">
+            <li><a href="dashboard.php"><i class="fa fa-home " id="active"></i></a></li>
+            <!-- <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li> -->
+            <li><a href="index.php"><i class="fa fa-exchange active2"></i> </a></li>
+            <li><a href="usersettings.php"><i class="fa fa-cog"></i> </a></li>
+            <li><a href="comingsoon.html"><i class="fa fa-bell"></i> </a></li>
+            <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> </a></li>
+        </ul>
+    </div>
+
     <script>
         const menu = document.getElementById('menu');
         const hamburger = document.getElementById('hamburger');

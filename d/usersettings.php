@@ -66,95 +66,228 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>User Settings</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 0;
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --md-primary-color: #85dfe7;
+            /* Deep Purple */
+            --md-primary-dark: rgb(16, 107, 115);
+            --md-accent-color: #85dfe7;
+            /* Teal */
+            --md-background-color: #f5f5f5;
+            /* Lighter grey for background */
+            --md-surface-color: #ffffff;
+            /* White for cards/containers */
+            --md-text-color: #212121;
+            /* Dark grey for primary text */
+            --md-light-text-color: #757575;
+            /* Medium grey for secondary text */
+            --md-shadow-1: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --md-shadow-2: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --md-shadow-3: 0 4px 8px rgba(0, 0, 0, 0.25);
+            --md-border-radius: 8px;
         }
 
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--md-background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--md-text-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--md-primary-color);
+            color: black;
+            padding: 15px 20px;
+            box-shadow: var(--md-shadow-1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 900px;
+            /* Adjust header width */
+            margin: 0 auto;
+        }
+
+        .logo h3 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .hamburger a {
+            color: white;
+            /* Home icon color */
+            font-size: 1.4em;
+            transition: color 0.3s ease;
+        }
+
+        .hamburger a:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* --- */
         .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            /* Slightly narrower for focus */
+            margin: 40px auto;
+            /* Reduced margin for a snugger fit */
+            background: var(--md-surface-color);
+            padding: 30px;
+            /* More padding */
+            border-radius: var(--md-border-radius);
+            box-shadow: var(--md-shadow-2);
+            /* More pronounced shadow */
         }
 
         h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            /* More space below heading */
+            color: var(--md-primary-dark);
+            /* Using a darker shade of primary for heading */
+            font-weight: 500;
+            /* Slightly bolder */
+            font-size: 1.8em;
         }
 
         form {
             display: flex;
             flex-direction: column;
+            gap: 15px;
+            /* Spacing between form elements */
         }
 
         label {
-            font-weight: bold;
-            margin-top: 10px;
+            font-weight: 500;
+            /* Medium font-weight for labels */
+            color: var(--md-light-text-color);
+            font-size: 0.9em;
+            /* Slightly smaller labels */
+            margin-bottom: -5px;
+            /* Pull labels closer to inputs */
+            display: block;
+            /* Ensures labels take full width */
         }
 
         input {
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 12px 15px;
+            /* More padding for inputs */
+            border: 1px solid #e0e0e0;
+            /* Lighter border */
+            border-radius: 4px;
+            /* Slightly less rounded */
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            /* Smooth transitions */
+            color: var(--md-text-color);
+        }
+
+        input:focus {
+            border-color: var(--md-primary-color);
+            /* Primary color border on focus */
+            box-shadow: 0 0 0 3px rgba(98, 0, 238, 0.1);
+            /* Subtle glow on focus */
+            outline: none;
+            /* Remove default outline */
         }
 
         button {
-            margin-top: 20px;
-            padding: 10px;
-            background: #4caf50;
-            color: #fff;
+            margin-top: 25px;
+            /* More space above button */
+            padding: 12px 20px;
+            /* More padding for a bigger button */
+            background: #fff;
+            color: #000;
+            /* White text */
             border: none;
-            border-radius: 5px;
+            border-radius: 24px;
+            /* Slightly less rounded */
             cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            /* Slight letter spacing */
+            text-transform: uppercase;
+            /* Uppercase text for buttons */
+            box-shadow: var(--md-shadow-3);
+            /* Subtle shadow for button */
+            transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+            /* Smooth transitions */
         }
 
         button:hover {
-            background: #45a049;
+            background: #ccc;
+            /* Darker primary on hover */
+            box-shadow: var(--md-shadow-2);
+            /* More pronounced shadow on hover */
+        }
+
+        button:active {
+            transform: translateY(1px);
+            /* Slight press effect */
         }
 
         .message {
             text-align: center;
             margin-top: 20px;
+            font-size: 0.95em;
+            color: var(--md-light-text-color);
         }
 
-        #hamburger i {
-            color: #333;
+        .dock2 {
+            margin: 0 auto;
+            justify-content: center;
+            align-items: center;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            position: absolute;
+            bottom: 0;
+            background: rgb(255, 255, 255);
+            padding: 0px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
         }
 
-        .info-section {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 5px;
+        .dock2 ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 auto;
+            display: flex;
+
+            justify-content: space-around;
+
+            align-items: center;
         }
 
-        .info-section p {
-            margin-bottom: 5px;
+        .dock2 ul li {
+            margin: 10px;
         }
 
-        .message {
-            width: 96%;
-            margin: auto;
-            text-align: center;
-            margin-top: 20px;
-            background-color: #fbfbfb;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        .dock2 ul li a {
+            color: rgb(0, 0, 0);
+            text-decoration: none;
         }
 
-        .message p {
+        .dock2 .menu i {
+            /* background-color: rgb(48, 48, 48); */
             font-size: 18px;
-            color: red;
+        }
+
+        .dock2 .menu .active2 {
+            background-color: rgb(122, 122, 122);
+            padding: 15px;
+            border-radius: 50%;
+            color: #fff;
         }
     </style>
 </head>
@@ -163,41 +296,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header>
         <nav>
             <div class="logo">
-                <h3>Hisab Kitab</h3>
-            </div>
-            <div class="hamburger" id="hamburger">
-                <a href="index.php"><i class="fa-solid fa-home"></i></a>
+                <h3>Hisab-Kitab</h3>
             </div>
         </nav>
     </header>
     <div class="container">
         <h2>User Settings</h2>
         <form method="POST">
-            <label for="name">Name:</label>
+            <label for="name">Name</label>
             <input type="text" id="name" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
 
-            <label for="email">Email:</label>
+            <label for="email">Email</label>
             <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
 
-            <label for="phone">Phone:</label>
+            <label for="phone">Phone</label>
             <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($user['phone']) ?>" required>
 
-            <label for="password">New Password:</label>
+            <label for="password">New Password</label>
             <input type="password" id="password" name="password" placeholder="Enter new password (optional)">
 
             <button type="submit">Update Settings</button>
         </form>
 
-        <!-- <div class="info-section">
-            <h3>Additional Information</h3>
-            <p><strong>Verification Status:</strong> <?= htmlspecialchars($user['verification_status']) ?></p>
-            <p><strong>Account Created At:</strong> <?= htmlspecialchars($user['created_at']) ?></p>
-        </div> -->
+        <div class="message">
+            <?php if (isset($message)) : ?>
+                <p><?= htmlspecialchars($message) ?></p>
+            <?php endif; ?>
+        </div>
     </div>
     <br><br>
-    <div class="message">
-        <p>More features coming soon! 🚀</p>
-        <p>We are continuously improving to bring you a better experience. Stay tuned for updates!</p>
+
+    <div class="dock2">
+        <ul class="menu" id="menu">
+            <li><a href="dashboard.php"><i class="fa fa-home " id="active"></i></a></li>
+            <!-- <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li> -->
+            <li><a href="index.php"><i class="fa fa-exchange "></i> </a></li>
+            <li><a href="usersettings.php"><i class="fa fa-cog active2"></i> </a></li>
+            <li><a href="comingsoon.html"><i class="fa fa-bell"></i> </a></li>
+            <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> </a></li>
+        </ul>
     </div>
 </body>
 
