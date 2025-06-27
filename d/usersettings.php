@@ -14,6 +14,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+$message = null; // Initialize message variable
+
 // Fetch user details
 $user_id = $_SESSION['user_id'];
 $query = "SELECT name, email, phone, verification_status, created_at FROM users WHERE user_id = ?";
@@ -50,10 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($updateStmt->execute()) {
-        echo "<p>Settings updated successfully!</p>";
-        header("Refresh: 3; url=usersettings.php");
+        $message = ['text' => 'Settings updated successfully!', 'type' => 'success'];
+        // Re-fetch user data to display updated values
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+        }
     } else {
-        echo "<p>Failed to update settings. Please try again later.</p>";
+        $message = ['text' => 'Failed to update settings. Please try again.', 'type' => 'error'];
     }
 }
 
@@ -136,8 +143,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* --- */
         .container {
             max-width: 500px;
+            width: 95%;
             /* Slightly narrower for focus */
-            margin: 40px auto;
+            margin: 20px auto;
             /* Reduced margin for a snugger fit */
             background: var(--md-surface-color);
             padding: 30px;
@@ -289,17 +297,194 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 50%;
             color: #fff;
         }
+
+        /* Theme Switcher Toggle */
+        .theme-switch-wrapper {
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            padding: 20px;
+            width: 90%;
+            border-radius: 20px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-switch-wrapper em {
+            margin-left: 10px;
+            font-size: 1rem;
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: var(--md-primary-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Dark Theme */
+        body.dark-theme {
+            background: #1a1a1a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme header {
+            background-color: #2c2c2c;
+        }
+
+        body.dark-theme .logo h3 {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .hamburger a {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .container {
+            background: #2c2c2c;
+        }
+
+        body.dark-theme h2 {
+            color: var(--md-accent-color);
+        }
+
+        body.dark-theme label {
+            color: #bbb;
+        }
+
+        body.dark-theme input {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme button {
+            background: #3a3a3a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme button:hover {
+            background: #4a4a4a;
+        }
+
+        body.dark-theme .message {
+            color: #bbb;
+        }
+
+        body.dark-theme .dock2 {
+            background: #2c2c2c;
+            border-color: #444;
+        }
+
+        body.dark-theme .dock2 ul li a {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .dock2 .menu .active2 {
+            background-color: #555;
+        }
+
+        body.dark-theme .dock2 .menu i {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .theme-switch-wrapper {
+            background-color: #2c2c2c;
+        }
+
+        body.dark-theme .theme-switch-wrapper em {
+            color: #f0f0f0;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: var(--md-border-radius);
+            color: #fff;
+            font-size: 1em;
+            z-index: 1000;
+            box-shadow: var(--md-shadow-3);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success {
+            background-color: #28a745;
+        }
+
+        .toast.error {
+            background-color: #dc3545;
+        }
+
+        body.dark-theme .toast.success { background-color: #3aa868; }
+        body.dark-theme .toast.error { background-color: #e57373; }
     </style>
 </head>
 
 <body>
-    <header>
+    <div id="toast-notification" class="toast"></div>
+    <!-- <header>
         <nav>
             <div class="logo">
                 <h3>Hisab-Kitab</h3>
             </div>
         </nav>
-    </header>
+    </header> -->
     <div class="container">
         <h2>User Settings</h2>
         <form method="POST">
@@ -317,14 +502,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <button type="submit">Update Settings</button>
         </form>
-
-        <div class="message">
-            <?php if (isset($message)) : ?>
-                <p><?= htmlspecialchars($message) ?></p>
-            <?php endif; ?>
-        </div>
     </div>
-    <br><br>
+
+    <!-- add a toggle here to on or off dark mode -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <em id="theme-toggle-text">Enable Dark Mode!</em>
+    </div>
+
+    <br>
 
     <div class="dock2">
         <ul class="menu" id="menu">
@@ -332,10 +521,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li> -->
             <li><a href="index.php"><i class="fa fa-exchange "></i> </a></li>
             <li><a href="usersettings.php"><i class="fa fa-cog active2"></i> </a></li>
-            <li><a href="comingsoon.html"><i class="fa fa-bell"></i> </a></li>
+            <li><a href="notification.html"><i class="fa fa-bell"></i> </a></li>
             <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> </a></li>
         </ul>
     </div>
+
+    <script>
+        <?php if ($message) : ?>
+            (function() {
+                const toast = document.getElementById('toast-notification');
+                toast.textContent = '<?= addslashes($message['text']) ?>';
+                toast.classList.add('<?= $message['type'] ?>', 'show');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000); // Hide after 3 seconds
+            })();
+        <?php endif; ?>
+
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const themeToggleText = document.getElementById('theme-toggle-text');
+
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+                themeToggleText.textContent = 'Enable Light Mode!';
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+                themeToggleText.textContent = 'Enable Dark Mode!';
+            }
+        }
+
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        // Apply theme on initial load
+        function applyTheme() {
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                toggleSwitch.checked = true;
+                themeToggleText.textContent = 'Enable Light Mode!';
+            } else {
+                document.body.classList.remove('dark-theme');
+                toggleSwitch.checked = false;
+                themeToggleText.textContent = 'Enable Dark Mode!';
+            }
+        }
+        applyTheme();
+    </script>
 </body>
 
 </html>

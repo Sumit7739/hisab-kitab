@@ -7,6 +7,12 @@
   <title>Verify OTP</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <script>
+    // Sync theme on load
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-theme");
+    }
+  </script>
   <style>
     body {
       margin: 0;
@@ -115,16 +121,84 @@
     }
 
 
-    .hamburge{
-      position: absolute;  
+    .hamburge {
+      position: absolute;
       top: 5px;
       right: 0;
       margin-right: 20px;
     }
 
-    .hamburge i{
+    .hamburge i {
       color: #333;
       font-size: 24px;
+    }
+
+    /* add dark theme */
+    body.dark-theme {
+      background: #1a1a1a;
+      color: #f0f0f0;
+    }
+
+    body.dark-theme header {
+      background-color: #2c2c2c;
+    }
+
+    body.dark-theme .container {
+      background-color: #2c2c2c;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-theme .title {
+      color: #f0f0f0;
+    }
+
+    body.dark-theme .subtitle {
+      color: #bbb;
+    }
+
+    body.dark-theme .otp-input {
+      background-color: #3a3a3a;
+      border: 1px solid #555;
+      color: rgb(255, 255, 255);
+    }
+
+    body.dark-theme input[type="text"] {
+      color: #fff;
+    }
+
+    body.dark-theme .otp-input:focus {
+      border-color: #0099ff;
+      box-shadow: 0 0 5px rgba(0, 153, 255, 0.5);
+    }
+
+    body.dark-theme .submit-btn {
+      background: #0056b3;
+    }
+
+    body.dark-theme .submit-btn:hover {
+      background: #003d80;
+      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.4);
+    }
+
+    body.dark-theme .footer {
+      color: #aaa;
+    }
+
+    body.dark-theme .footer a {
+      color: #0099ff;
+    }
+
+    body.dark-theme .footer a:hover {
+      color: #007acc;
+    }
+
+
+    body.dark-theme .logo {
+      color: #f0f0f0;
+    }
+
+    body.dark-theme .hamburge i {
+      color: #f0f0f0;
     }
   </style>
 </head>
@@ -187,6 +261,14 @@
         }
       });
     });
+
+    // Apply saved theme preference
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-theme");
+      if (themeToggle) {
+        themeToggle.classList.replace("fa-sun", "fa-moon");
+      }
+    }
   </script>
 
 </body>

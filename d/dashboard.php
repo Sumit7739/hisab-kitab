@@ -137,6 +137,12 @@ while ($row = $clients_result->fetch_assoc()) {
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="dash.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <script>
+        // Sync theme on load
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+        }
+    </script>
     <style>
         /* * {
             overflow: auto;
@@ -279,6 +285,102 @@ while ($row = $clients_result->fetch_assoc()) {
             border-radius: 50%;
             color: #fff;
         }
+
+        /* add dark theme */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .logo p {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme header {
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-theme .container {
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme .card,
+        body.dark-theme .client-card {
+            background: #3a3a3a;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .client-card:hover {
+            background: #4a4a4a;
+        }
+
+        body.dark-theme .search-bar input {
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content {
+            background: #2c2c2c;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content h2 {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content input,
+        body.dark-theme .popup-content select,
+        body.dark-theme .popup-content textarea {
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content input::placeholder,
+        body.dark-theme .popup-content select::placeholder,
+        body.dark-theme .popup-content textarea::placeholder {
+            color: #555;
+        }
+
+        body.dark-theme .popup-content .close {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content .close:hover {
+            background-color: #4a4a4a;
+        }
+
+        body.dark-theme .btn {
+            background-color: #4a4a4a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .btn:hover {
+            background-color: #555;
+        }
+
+        body.dark-theme .dock2 {
+            background: #2c2c2c;
+            box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px 0px, rgba(0, 0, 0, 0.15) 0px 1px 3px 1px;
+            border: 1px solid #444;
+        }
+
+        body.dark-theme .dock2 ul li a {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .dock2 .menu .active2 {
+            background-color: #555;
+        }
+
+        body.dark-theme .dock2 .menu i {
+            color: #f0f0f0;
+        }
     </style>
 </head>
 
@@ -289,7 +391,8 @@ while ($row = $clients_result->fetch_assoc()) {
                 <p>Welcome, <?php echo htmlspecialchars($username); ?></p>
             </div>
             <div class="hamburger" id="hamburger">
-                <!-- <i class="fa fa-bars"></i> -->
+                <i class="fa fa-sun" id="theme-toggle"></i>
+
             </div>
         </nav>
     </header>
@@ -376,7 +479,7 @@ while ($row = $clients_result->fetch_assoc()) {
             <!-- <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li> -->
             <li><a href="index.php"><i class="fa fa-exchange"></i> </a></li>
             <li><a href="usersettings.php"><i class="fa fa-cog"></i> </a></li>
-            <li><a href="comingsoon.html"><i class="fa fa-bell"></i> </a></li>
+            <li><a href="notification.html"><i class="fa fa-bell"></i> </a></li>
             <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> </a></li>
         </ul>
     </div>
@@ -477,6 +580,22 @@ while ($row = $clients_result->fetch_assoc()) {
                 `;
                 clientCards.appendChild(card);
             });
+        });
+
+        // add js for theme toggle
+        const themeToggle = document.getElementById("theme-toggle");
+        // Load saved theme preference
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+            themeToggle.classList.replace("fa-sun", "fa-moon");
+        }
+
+        themeToggle.addEventListener("click", () => {
+            document.body.classList.toggle("dark-theme");
+            const isDark = document.body.classList.contains("dark-theme");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            themeToggle.classList.toggle("fa-sun", !isDark);
+            themeToggle.classList.toggle("fa-moon", isDark);
         });
     </script>
 </body>

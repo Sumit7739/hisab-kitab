@@ -180,6 +180,12 @@ $transactionList = array_reverse($transactionList);
     <link rel="stylesheet" href="chatpage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Sync theme on load
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+        }
+    </script>
     <style>
         body {
             font-family: Poppins, sans-serif;
@@ -388,6 +394,7 @@ $transactionList = array_reverse($transactionList);
             /* In case the content overflows */
         }
 
+
         /* Modal content */
         .modal-content {
             background-color: #fff;
@@ -401,6 +408,16 @@ $transactionList = array_reverse($transactionList);
             /* Responsive width */
             margin: 0 auto;
         }
+
+        body.dark-theme .modal {
+            background-color: #1a1a1a;
+        }
+
+        body.dark-theme .modal-content {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+        }
+        
 
         /* Modal text */
         .modal-content p {
@@ -509,6 +526,149 @@ $transactionList = array_reverse($transactionList);
                 opacity: 0;
             }
         }
+
+        /* add dark theme */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .nav {
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-theme .nav a {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .nav .username,
+        body.dark-theme .nav .conUser {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .addTransactions {
+            background-color: #1a1a1a;
+        }
+
+        body.dark-theme .addTransactions button {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .addTransactions button.debits {
+            background-color: #8b0000;
+        }
+
+        body.dark-theme .addTransactions button.credits {
+            background-color: #006400;
+        }
+
+        body.dark-theme .transaction .box {
+            /* background-color: #2c2c2c; */
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-theme .transaction .box p {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .transaction .box .time {
+            color: #bbb;
+        }
+
+        body.dark-theme .modal-content {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .modal-content p {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme #confirmDeleteBtn {
+            background-color: #c82333;
+        }
+
+        body.dark-theme #cancelDeleteBtn {
+            background-color: #555;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup .popup-content {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup .popup-close {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup .popup-content h2 {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup .popup-content form {
+            background-color: #2c2c2c;
+        }
+
+        body.dark-theme .popup .popup-content form label {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup input,
+        body.dark-theme .popup select,
+        body.dark-theme .popup textarea {
+            color:rgb(255, 255, 255);
+            background-color: #2c2c2c;
+            border: 1px solid #555;
+            box-shadow: inset 0 3px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme .popup input[type="date"],
+        body.dark-theme .popup input[type="number"]::placeholder,
+        body.dark-theme .popup input[type="text"]::placeholder {
+            color:rgb(255, 255, 255);
+        }
+
+        body.dark-theme .popup button {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup button.debits {
+            background-color: #8b0000;
+        }
+
+        body.dark-theme .popup button.credits {
+            background-color: #006400;
+        }
+
+        body.dark-theme .success-message {
+            background-color: #28a745;
+        }
+
+        body.dark-theme .error-message {
+            background-color: #dc3545;
+        }
+
+        body.dark-theme .success-message p,
+        body.dark-theme .error-message p {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .hold-to-delete {
+            background-color: #444;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .hold-to-delete:hover {
+            color: #e53935;
+        }
+
+        body.dark-theme .fa-gear {
+            color: #f0f0f0;
+        }
+
+        
     </style>
 </head>
 
@@ -621,6 +781,14 @@ $transactionList = array_reverse($transactionList);
 
     <script src="script.js"></script>
     <script>
+        // Apply saved theme preference
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+            if (themeToggle) {
+                themeToggle.classList.replace("fa-sun", "fa-moon");
+            }
+        }
+
         let deleteTimer;
         let currentTransactionId = null;
 

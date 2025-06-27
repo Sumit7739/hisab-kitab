@@ -182,6 +182,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="settings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Sync theme on load
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+        }
+    </script>
     <style>
         /* Popup buttons */
         .popup-buttons {
@@ -205,6 +211,150 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .cancel-btn {
             background: #6c757d;
             color: #fff;
+        }
+
+        /* add dark theme here */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .nav {
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-theme .nav a {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .nav .username {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .container {
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme h2,
+        body.dark-theme p,
+        body.dark-theme label {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .form-group input[type="text"],
+        body.dark-theme .form-group input[type="email"] {
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .form-group button {
+            background-color: #4a4a4a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .form-group button:hover {
+            background-color: #555;
+        }
+
+        body.dark-theme .creator-user-details input,
+        body.dark-theme .connected-user-details input {
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            color: #f0f0f0;
+        }
+
+        /* body.dark-theme .toggle-switch {
+            background-color: #555;
+        } */
+
+        /* body.dark-theme .toggle-switch.active {
+            background-color: #4a4a4a;
+        } */
+
+        body.dark-theme .toggle-switch .slider {
+            background-color: #f0f0f0;
+        }
+
+        /* body.dark-theme .toggle-switch.active .slider {
+            background-color: #4a4a4a;
+        } */
+
+        body.dark-theme .message-box {
+            background-color: #333;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .message-box p {
+            color: #f0f0f0;
+        }
+
+
+        body.dark-theme .delbtn {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        body.dark-theme .rembtn {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        body.dark-theme .spacer {
+            height: 10px;
+        }
+
+        body.dark-theme .popup-overlay {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        body.dark-theme .popup-content {
+            background-color: #333;
+            color: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        body.dark-theme .popup-content h3 {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content p {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content button {
+            background-color: #4a4a4a;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .popup-content button:hover {
+            background-color: #555;
+        }
+
+        body.dark-theme .permission-toggle span {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .meesg {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .fa-gear {
+            color: #f0f0f0;
+        }
+
+        body.dark-theme #otp:read-only,
+        #otp_status:read-only,
+        #connection_status:read-only {
+            background-color: #4a4a4a;
+            color: #f0f0f0;
         }
     </style>
 </head>
@@ -288,7 +438,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
         <br><br>
-        <p style="font-size: 1.2rem; color: #555; margin-top: 5px; justify-content: center; align-items: center;text-align: center;">When the toggle is on, the connected user can add transactions.</p>
+        <p style="font-size: 1.2rem; margin-top: 5px; justify-content: center; align-items: center;text-align: center;" class="meesg">When the toggle is on, the connected user can add transactions.</p>
         <br><br>
         <hr>
 
@@ -565,6 +715,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Handle OTP generation
             $('#generateOtpBtn').click(generateOtp);
         });
+
+        // Apply saved theme preference
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+            if (themeToggle) {
+                themeToggle.classList.replace("fa-sun", "fa-moon");
+            }
+        }
     </script>
 </body>
 

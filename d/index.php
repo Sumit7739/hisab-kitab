@@ -172,6 +172,12 @@ if (empty($chats)) {
     <title>Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script>
+        // Sync theme on load
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+        }
+    </script>
 </head>
 
 <style>
@@ -315,6 +321,141 @@ if (empty($chats)) {
         border-radius: 50%;
         color: #fff;
     }
+
+    /* add dark mode here */
+    body.dark-theme {
+        background-color: #1a1a1a;
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .logo p {
+        color: #f0f0f0;
+    }
+
+    body.dark-theme header {
+        background-color: #2c2c2c;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    body.dark-theme .dock {
+        background-color: #2c2c2c;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-theme .dock-item button {
+        background-color: #3a3a3a;
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .box2 {
+        background-color: #2c2c2c;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-theme .box2 input[type="text"],
+    body.dark-theme .box2 input[type="date"] {
+        background-color: #3a3a3a;
+        border: 1px solid #555;
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .box2 button {
+        background-color: #3a3a3a;
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .wrapper .box3 {
+        background-color: #2c2c2c;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-theme .wrapper .box3 .user .info .name,
+    body.dark-theme .wrapper .box3 .user .info .time {
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .modal {
+        background-color: rgba(0, 0, 0, 0.5);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    body.dark-theme .modal .modal-content {
+        background-color: #2c2c2c;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-theme .modal .modal-content .close {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .modal .modal-content .close:hover {
+        cursor: pointer;
+        color: #ff4081;
+    }
+
+    body.dark-theme .modal .modal-content h2 {
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .modal .modal-content form {
+        margin-top: 20px;
+    }
+
+    body.dark-theme .modal .modal-content form label {
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .modal .modal-content form input {
+        background-color: #3a3a3a;
+        border: 1px solid #555;
+        color: #f0f0f0;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    body.dark-theme .modal .modal-content form button {
+        background-color: #3a3a3a;
+        color: #f0f0f0;
+        padding: 15px 20px;
+        border: none;
+        cursor: pointer;
+    }
+
+    body.dark-theme .modal .modal-content form button:hover {
+        background-color: #ff4081;
+        color: #fff;
+    }
+
+    body.dark-theme .dock2 {
+        background: #2c2c2c;
+        box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px 0px, rgba(0, 0, 0, 0.15) 0px 1px 3px 1px;
+        border: 1px solid #444;
+    }
+
+    body.dark-theme .dock2 ul li a {
+        color: #f0f0f0;
+    }
+
+    body.dark-theme .dock2 .menu .active2 {
+        background-color: #555;
+    }
+
+    body.dark-theme .dock2 .menu i {
+        color: #f0f0f0;
+    }
 </style>
 
 <body>
@@ -324,7 +465,7 @@ if (empty($chats)) {
                 <p>Welcome, <?php echo htmlspecialchars($username); ?></p>
             </div>
             <div class="hamburger" id="hamburger">
-                <!-- <i class="fa fa-bars"></i> -->
+                <i class="fa fa-sun" id="theme-toggle"></i>
             </div>
         </nav>
     </header>
@@ -428,7 +569,7 @@ if (empty($chats)) {
             <!-- <li><a href="clients.html"><i class="fa fa-users"></i> Clients</a></li> -->
             <li><a href="index.php"><i class="fa fa-exchange active2"></i> </a></li>
             <li><a href="usersettings.php"><i class="fa fa-cog"></i> </a></li>
-            <li><a href="comingsoon.html"><i class="fa fa-bell"></i> </a></li>
+            <li><a href="notification.html"><i class="fa fa-bell"></i> </a></li>
             <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i> </a></li>
         </ul>
     </div>
@@ -449,6 +590,28 @@ if (empty($chats)) {
                 hamburger.classList.remove('active');
             }
         });
+
+        // Define themeToggle early
+        const themeToggle = document.getElementById("theme-toggle");
+
+        // Apply saved theme preference
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-theme");
+            if (themeToggle) {
+                themeToggle.classList.replace("fa-sun", "fa-moon");
+            }
+        }
+
+        // Only attach event listener if themeToggle exists
+        if (themeToggle) {
+            themeToggle.addEventListener("click", () => {
+                document.body.classList.toggle("dark-theme");
+                const isDark = document.body.classList.contains("dark-theme");
+                localStorage.setItem("theme", isDark ? "dark" : "light");
+                themeToggle.classList.toggle("fa-sun", !isDark);
+                themeToggle.classList.toggle("fa-moon", isDark);
+            });
+        }
         // Get modal and related elements
         const addCustomerModal = document.getElementById('addCustomerModal');
         const closeModal = document.getElementById('closeModal');
